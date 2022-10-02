@@ -1,5 +1,5 @@
-# XaxupAIO
-Plugin for BGX
+XaxupAIO
+Plugin for BGX.gg
 
-#Supported Champions
-  Teemo
+Supported champions
+Teemo
