@@ -1,2 +1,5 @@
 # XaxupAIO
-BGX Plugins
+Plugin for BGX
+
+#Supported Champions
+  Teemo
