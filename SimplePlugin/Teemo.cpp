@@ -1,5 +1,6 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 #include "Teemo.h"
+#include "permashow.hpp"
 
 namespace teemo
 {
@@ -15,6 +16,8 @@ namespace teemo
         TreeEntry* use_q = nullptr;
         TreeEntry* use_w = nullptr;
         TreeEntry* w_range = nullptr;
+        TreeEntry* use_r = nullptr;
+        TreeEntry* r_minimum_enemies = nullptr;
     }
     namespace harass
     {
@@ -36,6 +39,7 @@ namespace teemo
     namespace misc
     {
         TreeEntry* auto_q_on_gapclose = nullptr;
+        TreeEntry* auto_w_on_gapclose = nullptr;
         TreeEntry* auto_r_cc = nullptr;
         TreeEntry* auto_r_cc_only_in_combo = nullptr;
     }
@@ -55,6 +59,7 @@ namespace teemo
     void on_update();
     void on_gapcloser(game_object_script sender, antigapcloser::antigapcloser_args* args);
     void q_logic();
+    void r_combo_logic();
     void r_on_cc_logic();
     void w_logic();
 
@@ -62,6 +67,9 @@ namespace teemo
     float last_r_use_time = 0.0f;
     float r_arm_time = 1.0f;
     float r_missile_speed = 1000.0f;
+    float buff_remaining_time_additional_time = 0.1f;
+    float delay_between_r = 7.0f;
+    float explosion_range = 425.0f;
 
     void load()
     {
@@ -91,6 +99,11 @@ namespace teemo
                     combo::use_w = w_config->add_checkbox(myhero->get_model() + ".comboUseW", "Use W", true);
                     combo::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
                     combo::w_range = w_config->add_slider(myhero->get_model() + ".comboWConfigRange", "Enemy In Range To Activate", 1000, 850, 1500);
+                }
+                auto r_config = combo->add_tab(myhero->get_model() + ".comboRConfig", "R Settings");
+                {
+                    combo::use_r = r_config->add_checkbox(myhero->get_model() + ".comboRConfigUseR", "Use R", true);
+                    combo::r_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRConfigMinREnemies", "Minimum Enemies In Explosion Range", 3, 1, 5);
                 }
             }
             auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
@@ -132,9 +145,13 @@ namespace teemo
             }
             auto misc = main_tab->add_tab(myhero->get_model() + ".misc", "Misc");
             {
-                misc::auto_q_on_gapclose = misc->add_checkbox(myhero->get_model() + ".miscAutoQGapclose", "Auto Q On Gapclose", true);
-                misc::auto_q_on_gapclose->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-
+                auto gapclose = misc->add_tab(myhero->get_model() + ".miscGapclose", "Gapclose");
+                {
+                    misc::auto_q_on_gapclose = gapclose->add_checkbox(myhero->get_model() + ".miscAutoQGapclose", "Auto Q On Gapclose", true);
+                    misc::auto_q_on_gapclose->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());                   
+                    misc::auto_w_on_gapclose = gapclose->add_checkbox(myhero->get_model() + ".miscAutoWGapclose", "Auto W On Gapclose", true);
+                    misc::auto_w_on_gapclose->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
+                }
 
                 auto r_on_cc = misc->add_tab(myhero->get_model() + ".miscRCC", "Auto R On CC");
                 {
@@ -175,14 +192,14 @@ namespace teemo
 
         if (orbwalker->can_move(0.05f))
         {
-            if (r->is_ready() && misc::auto_r_cc->get_bool() && !misc::auto_r_cc_only_in_combo->get_bool() && gametime->get_time() > last_r_use_time + 7.0f)
+            if (r->is_ready() && misc::auto_r_cc->get_bool() && !misc::auto_r_cc_only_in_combo->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
             {
                 r_on_cc_logic();
             }
 
             if (orbwalker->combo_mode())
             {
-                if (r->is_ready() && misc::auto_r_cc->get_bool() && misc::auto_r_cc_only_in_combo->get_bool() && gametime->get_time() > last_r_use_time + 7.0f)
+                if (r->is_ready() && misc::auto_r_cc->get_bool() && misc::auto_r_cc_only_in_combo->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
                 {
                     r_on_cc_logic();
                 }
@@ -194,6 +211,10 @@ namespace teemo
                 if (w->is_ready() && combo::use_w->get_bool())
                 {
                     w_logic();
+                }
+                if (r->is_ready() && combo::use_r->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
+                {
+                    r_combo_logic();
                 }
             }
             if (orbwalker->harass())
@@ -240,7 +261,7 @@ namespace teemo
                             return;
                         }
                     }
-                    if (r->is_ready() && laneclear::use_r->get_bool() && gametime->get_time() > last_r_use_time + 7.0f)
+                    if (r->is_ready() && laneclear::use_r->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
                     {
                         if (lane_minions.size() >= laneclear::minimum_minions_to_r->get_int() 
                             && r->cast_on_best_farm_position(1)
@@ -264,7 +285,7 @@ namespace teemo
 
                     auto monster_hp_percentage = monsters.front()->get_health_percent();
 
-                    if (r->is_ready() && jungleclear::use_r->get_bool() && gametime->get_time() > last_r_use_time + 7.0f && monster_hp_percentage >= jungleclear::min_monster_hp_to_r->get_int())
+                    if (r->is_ready() && jungleclear::use_r->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r && monster_hp_percentage >= jungleclear::min_monster_hp_to_r->get_int())
                     {
                         if (jungleclear::place_on_teemo->get_bool() && r->cast(myhero))
                         {
@@ -315,6 +336,31 @@ namespace teemo
         }
     }
 
+    void r_combo_logic()
+    {
+        for (auto&& enemy : entitylist->get_enemy_heroes())
+        {
+            if (enemy != nullptr && enemy->is_valid_target(r->range()))
+            {
+                auto predicted_position = r->get_prediction(enemy).get_cast_position();
+                auto enemies_in_explosion_range = predicted_position.count_enemies_in_range(explosion_range);
+                
+                if (enemies_in_explosion_range >= combo::r_minimum_enemies->get_int())
+                {
+                    if (r->cast(enemy, hit_chance::high))
+                    {
+                        last_r_use_time = gametime->get_time();
+                        return;
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+            }
+        }
+    }
+
     void r_on_cc_logic()
     {
         for (auto&& enemy : entitylist->get_enemy_heroes())
@@ -328,7 +374,7 @@ namespace teemo
                     float remaining_time = buff->get_remaining_time();
                     float r_travel_time = enemy->get_distance(myhero) / r_missile_speed;
                     
-                    if (remaining_time >= r->get_delay() + r_arm_time + r_travel_time)
+                    if (remaining_time + buff_remaining_time_additional_time >= r->get_delay() + r_arm_time + r_travel_time)
                     {
                         if (r->cast(enemy))
                         {
@@ -358,6 +404,13 @@ namespace teemo
                 {
                     return;
                 }
+            }
+        }
+        if (w->is_ready() && misc::auto_w_on_gapclose->get_bool())
+        {
+            if (w->cast())
+            {
+                return;
             }
         }
     }
