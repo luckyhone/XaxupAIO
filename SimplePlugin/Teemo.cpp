@@ -55,6 +55,7 @@ namespace teemo
 
     Position my_hero_region;
 
+    int count_enemy_minions_in_range(float range, vector from);
     void on_update();
     void on_gapcloser(game_object_script sender, antigapcloser::antigapcloser_args* args);
     void q_logic();
@@ -262,13 +263,22 @@ namespace teemo
                     }
                     if (r->is_ready() && laneclear::use_r->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
                     {
-                        if (lane_minions.size() >= laneclear::minimum_minions_to_r->get_int() 
-                            && r->cast_on_best_farm_position(1)
-                            && !lane_minions.front()->has_buff_type(buff_type::Poison)
-                            )
+                        int enemy_minions = 0;
+                        for (auto&& enemy_minion : entitylist->get_enemy_minions())
                         {
-                            last_r_use_time = gametime->get_time();
-                            return;
+                            if (enemy_minion != nullptr && enemy_minion->is_valid_target(r->range()))
+                            {
+                                auto predicted_position = r->get_prediction(enemy_minion).get_cast_position();
+                                
+                                if (count_enemy_minions_in_range(explosion_range, predicted_position) >= laneclear::minimum_minions_to_r->get_int())
+                                {
+                                    if (r->cast(enemy_minion))
+                                    {
+                                        last_r_use_time = gametime->get_time();
+                                        return;
+                                    }
+                                }
+                            }
                         }
                     }
                 }      
@@ -310,6 +320,17 @@ namespace teemo
                 }
             }
         }
+    }
+
+    int count_enemy_minions_in_range(float range, vector from)
+    {
+        int count = 0;
+        for (auto&& t : entitylist->get_enemy_minions())
+        {
+            if (t->is_valid_target(range, from))
+                count++;
+        }
+        return count;
     }
 
     void q_logic()
