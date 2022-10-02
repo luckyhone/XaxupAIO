@@ -1,6 +1,5 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 #include "Teemo.h"
-#include "permashow.hpp"
 
 namespace teemo
 {
