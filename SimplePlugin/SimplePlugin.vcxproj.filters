@@ -22,6 +22,9 @@
     <ClCompile Include="Teemo.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Amumu.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -34,5 +37,6 @@
       <Filter>plugin_sdk</Filter>
     </ClInclude>
     <ClInclude Include="Teemo.h" />
+    <ClInclude Include="Amumu.h" />
   </ItemGroup>
 </Project>

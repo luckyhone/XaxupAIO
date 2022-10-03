@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="..\plugin_sdk\clipper.cpp" />
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
+    <ClCompile Include="Amumu.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Teemo.cpp" />
   </ItemGroup>
@@ -163,6 +164,7 @@
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
+    <ClInclude Include="Amumu.h" />
     <ClInclude Include="Teemo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

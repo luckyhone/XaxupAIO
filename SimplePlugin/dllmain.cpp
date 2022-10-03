@@ -1,9 +1,10 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 
 PLUGIN_NAME( "XaxupAIO" );
-SUPPORTED_CHAMPIONS(champion_id::Teemo);
+SUPPORTED_CHAMPIONS(champion_id::Teemo, champion_id::Amumu);
 
 #include "Teemo.h"
+#include "Amumu.h"
 
 PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
 {
@@ -13,6 +14,9 @@ PLUGIN_API bool on_sdk_load(plugin_sdk_core* plugin_sdk_good)
     {
     case champion_id::Teemo:
         teemo::load();
+        break;
+    case champion_id::Amumu:
+        amumu::load();
         break;
     default:
         console->print("Champion %s is not supported!", myhero->get_model_cstr());
