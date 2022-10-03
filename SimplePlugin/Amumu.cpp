@@ -83,7 +83,7 @@ namespace amumu
         else if (myhero->get_spell(spellslot::summoner2)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
             flash = plugin_sdk->register_spell(spellslot::summoner2, 400.f);
 
-        main_tab = menu->create_tab("amumu", "XaxupAIO");
+        main_tab = menu->create_tab("amumu", "Xaxup AIO");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
             auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo");
@@ -397,7 +397,7 @@ namespace amumu
                 }
             }
 
-            if (q->cast(best_enemy, hit_chance::medium))
+            if (q->cast(best_enemy, hit_chance::high))
             {
                 return;
             }
@@ -409,7 +409,7 @@ namespace amumu
 
         if (target->get_distance(myhero) <= q->range())
         {
-            if (q->cast(target, hit_chance::medium))
+            if (q->cast(target, hit_chance::high))
             {
                 return;
             }
@@ -424,7 +424,7 @@ namespace amumu
 
         if (target->get_distance(myhero) <= q->range())
         {
-            if (q->cast(target, hit_chance::medium))
+            if (q->cast(target, hit_chance::high))
             {
                 return;
             }

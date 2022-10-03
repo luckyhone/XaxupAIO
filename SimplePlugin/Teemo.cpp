@@ -84,7 +84,7 @@ namespace teemo
         else if (myhero->get_spell(spellslot::summoner2)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
             flash = plugin_sdk->register_spell(spellslot::summoner2, 400.f);
 
-        main_tab = menu->create_tab("teemo", "XaxupAIO");
+        main_tab = menu->create_tab("teemo", "Xaxup AIO");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
             auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo");
