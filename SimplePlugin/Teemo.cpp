@@ -376,7 +376,7 @@ namespace teemo
             if (enemy != nullptr && enemy->is_valid_target(q->range()))
             {
                 float calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, get_q_raw_damage());
-                //5f to make sure HP doesn't regenerate before Q hit
+
                 if (calculated_damage >= enemy->get_health()+5.0f)
                 {
                     if (q->cast(enemy))

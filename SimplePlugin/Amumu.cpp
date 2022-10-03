@@ -56,7 +56,6 @@ namespace amumu
     };
 
     Position my_hero_region;  
-    void r_flash_logic();
     int count_enemy_heroes_in_range(float range, vector from);
     int count_enemy_minions_in_range(float range, vector from);
     void check_for_killable_enemy();
