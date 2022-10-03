@@ -467,7 +467,7 @@ namespace amumu
 
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (enemy != nullptr)
+                if (enemy != nullptr && enemy->is_valid_target(r_radius+flash->range()))
                 {
                     vector enemy_position = enemy->get_position();
                     vector position_after_flash = myhero->get_position().extend(enemy_position, flash->range());
