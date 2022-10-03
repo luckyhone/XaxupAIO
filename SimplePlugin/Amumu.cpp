@@ -18,6 +18,8 @@ namespace amumu
         TreeEntry* use_e = nullptr;
         TreeEntry* use_r = nullptr;
         TreeEntry* r_minimum_enemies = nullptr;
+        TreeEntry* r_flash_minimum_enemies = nullptr;
+        TreeEntry* use_r_flash = nullptr;
         TreeEntry* q_go_to_most_crowded_enemy = nullptr;
         TreeEntry* most_crowded_only_if_r_up = nullptr;
     }
@@ -54,6 +56,7 @@ namespace amumu
     };
 
     Position my_hero_region;  
+    void r_flash_logic();
     int count_enemy_heroes_in_range(float range, vector from);
     int count_enemy_minions_in_range(float range, vector from);
     void check_for_killable_enemy();
@@ -107,7 +110,9 @@ namespace amumu
                 auto r_config = combo->add_tab(myhero->get_model() + ".comboRConfig", "R Settings");
                 {
                     combo::use_r = r_config->add_checkbox(myhero->get_model() + ".comboRConfigUseR", "Use R", true);
-                    combo::r_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRConfigMinREnemies", "Minimum Enemies In R Range", 3, 1, 5);
+                    combo::r_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRConfigMinREnemies", "^~ minimum enemies in range", 3, 1, 5);
+                    combo::use_r_flash = r_config->add_checkbox(myhero->get_model() + ".comboRConfigUseRFlash", "Use R+Flash", true);
+                    combo::r_flash_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRFlashConfigMinREnemies", "^~ minimum enemies stunned", 3, 1, 5);
                 }
             }
             auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
@@ -139,13 +144,12 @@ namespace amumu
                 {
                     laneclear::use_w = w_config->add_checkbox(myhero->get_model() + ".laneClearUseW", "Use W", true);
                     laneclear::use_w->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
-                    laneclear::w_minimum_minions = w_config->add_slider(myhero->get_model() + ".laneClearWMinMinions", "Minimum Minions To Cast", 3, 1, 6);
+                    laneclear::w_minimum_minions = w_config->add_slider(myhero->get_model() + ".laneClearWMinMinions", "^~ minimum minions to cast", 3, 1, 6);
                 }
                 auto e_cofig = laneclear->add_tab(myhero->get_model() + ".laneClearEConfig", "E Settings");
                 {
                     laneclear::use_e = e_cofig->add_checkbox(myhero->get_model() + ".laneClearUseE", "Use E", true);
-                    laneclear::e_minimum_minions = e_cofig->add_slider(myhero->get_model() + ".laneClearEMinMinions", "Minimum Minions To Cast", 3, 1, 6);
-                    
+                    laneclear::e_minimum_minions = e_cofig->add_slider(myhero->get_model() + ".laneClearEMinMinions", "^~ minimum minions to cast", 3, 1, 6);               
                     laneclear::use_e->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
                 }
             }
@@ -300,16 +304,6 @@ namespace amumu
                         }
                     }
                 }
-                else
-                {
-                    if (w->is_ready() && laneclear::use_w->get_bool() && myhero->has_buff(1839643913))
-                    {
-                        if (w->cast())
-                        {
-                            return;
-                        }
-                    }
-                }
                 if (!monsters.empty())
                 {
                     //Jungleclear logic
@@ -333,16 +327,6 @@ namespace amumu
                     if (e->is_ready() && jungleclear::use_e->get_bool() && monsters.front()->get_distance(myhero) <= 350.0f)
                     {
                         if (e->cast())
-                        {
-                            return;
-                        }
-                    }
-                }
-                else
-                {
-                    if (w->is_ready() && jungleclear::use_w->get_bool() && myhero->has_buff(1839643913))
-                    {
-                        if (w->cast())
                         {
                             return;
                         }
@@ -472,6 +456,36 @@ namespace amumu
             if (r->cast())
             {
                 return;
+            }
+        }
+        else
+        {
+            if (!combo::use_r_flash->get_bool()) return;
+
+            game_object_script best_enemy;
+            int current_max_enemies = 0;
+
+            for (auto&& enemy : entitylist->get_enemy_heroes())
+            {
+                if (enemy != nullptr)
+                {
+                    vector enemy_position = enemy->get_position();
+                    vector position_after_flash = myhero->get_position().extend(enemy_position, flash->range());
+      
+                    auto enemies_in_r_range = position_after_flash.count_enemies_in_range(r_radius-20);
+
+                    if (enemies_in_r_range >= current_max_enemies)
+                    {
+                        best_enemy = enemy;
+                        current_max_enemies = enemies_in_r_range;
+                    }
+                }
+            }
+
+            if (best_enemy != nullptr && current_max_enemies >= combo::r_flash_minimum_enemies->get_int() && myhero->get_distance(best_enemy) < (flash->range() + r_radius - 20))
+            {
+                flash->cast(best_enemy);
+                r->cast();
             }
         }
     }
