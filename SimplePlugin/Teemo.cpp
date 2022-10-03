@@ -38,6 +38,7 @@ namespace teemo
     namespace misc
     {
         TreeEntry* auto_q_on_gapclose = nullptr;
+        TreeEntry* auto_q_if_killable = nullptr;
         TreeEntry* auto_w_on_gapclose = nullptr;
         TreeEntry* auto_r_cc = nullptr;
         TreeEntry* auto_r_cc_only_in_combo = nullptr;
@@ -56,14 +57,19 @@ namespace teemo
     Position my_hero_region;
 
     int count_enemy_minions_in_range(float range, vector from);
+    float get_q_raw_damage();
+    void auto_q_if_killable();
     void on_update();
     void on_gapcloser(game_object_script sender, antigapcloser::antigapcloser_args* args);
     void q_logic();
     void r_combo_logic();
     void r_on_cc_logic();
     void w_logic();
+    void on_after_attack(game_object_script target);
 
     float r_ranges[] = { 600.0f, 750.0f, 900.0f };
+    std::vector<float> q_damages = { 80,125,170,215,260 };
+    float q_ap_coef = 0.8f;
     float last_r_use_time = 0.0f;
     float r_arm_time = 1.0f;
     float r_missile_speed = 1000.0f;
@@ -84,7 +90,7 @@ namespace teemo
         else if (myhero->get_spell(spellslot::summoner2)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
             flash = plugin_sdk->register_spell(spellslot::summoner2, 400.f);
 
-        main_tab = menu->create_tab("teemo", "Xaxup AIO");
+        main_tab = menu->create_tab("teemo", "XaxupAIO");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
             auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo");
@@ -152,12 +158,16 @@ namespace teemo
                     misc::auto_w_on_gapclose = gapclose->add_checkbox(myhero->get_model() + ".miscAutoWGapclose", "Auto W On Gapclose", true);
                     misc::auto_w_on_gapclose->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
                 }
-
                 auto r_on_cc = misc->add_tab(myhero->get_model() + ".miscRCC", "Auto R On CC");
                 {
                     misc::auto_r_cc = r_on_cc->add_checkbox(myhero->get_model() + ".miscAutoRCC", "Enabled", true);
                     misc::auto_r_cc->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
                     misc::auto_r_cc_only_in_combo = r_on_cc->add_checkbox(myhero->get_model() + ".miscAutoRCCInCombo", "^~ only in combo", false);
+                }                
+                auto auto_q_killable = misc->add_tab(myhero->get_model() + ".miscQKillable", "Auto Q If Killable");
+                {
+                    misc::auto_q_if_killable = auto_q_killable->add_checkbox(myhero->get_model() + ".miscAutoQKillableConfig", "Enabled", true);
+                    misc::auto_q_if_killable->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
                 }
             }
             auto flee = main_tab->add_tab(myhero->get_model() + ".flee", "Flee");
@@ -168,6 +178,7 @@ namespace teemo
         }
 
         antigapcloser::add_event_handler(on_gapcloser);
+        event_handler<events::on_after_attack_orbwalker>::add_callback(on_after_attack);
         event_handler<events::on_update>::add_callback(on_update);
     }
 
@@ -182,8 +193,9 @@ namespace teemo
         if (flash)
             plugin_sdk->remove_spell(flash);
 
-        event_handler<events::on_update>::remove_handler(on_update);
         antigapcloser::remove_event_handler(on_gapcloser);
+        event_handler<events::on_update>::remove_handler(on_update);
+        event_handler<events::on_after_attack_orbwalker>::remove_handler(on_after_attack);
     }
 
     void on_update()
@@ -192,6 +204,8 @@ namespace teemo
 
         if (orbwalker->can_move(0.05f))
         {
+            auto_q_if_killable();
+
             if (r->is_ready() && misc::auto_r_cc->get_bool() && !misc::auto_r_cc_only_in_combo->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
             {
                 r_on_cc_logic();
@@ -202,11 +216,6 @@ namespace teemo
                 if (r->is_ready() && misc::auto_r_cc->get_bool() && misc::auto_r_cc_only_in_combo->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
                 {
                     r_on_cc_logic();
-                }
-
-                if (q->is_ready() && combo::use_q->get_bool())
-                {
-                    q_logic();
                 }
                 if (w->is_ready() && combo::use_w->get_bool())
                 {
@@ -263,7 +272,6 @@ namespace teemo
                     }
                     if (r->is_ready() && laneclear::use_r->get_bool() && gametime->get_time() > last_r_use_time + delay_between_r)
                     {
-                        int enemy_minions = 0;
                         for (auto&& enemy_minion : entitylist->get_enemy_minions())
                         {
                             if (enemy_minion != nullptr && enemy_minion->is_valid_target(r->range()))
@@ -322,6 +330,20 @@ namespace teemo
         }
     }
 
+    void on_after_attack(game_object_script target)
+    {
+        if (q->is_ready() && target->is_ai_hero() && target->is_valid_target(q->range()))
+        {
+            if (((orbwalker->combo_mode() && combo::use_q->get_bool()) || (orbwalker->harass() && harass::use_q->get_bool())))
+            {
+                if (q->cast(target))
+                {
+                    myhero->issue_order(target);
+                }
+            }
+        }
+    }
+
     int count_enemy_minions_in_range(float range, vector from)
     {
         int count = 0;
@@ -343,6 +365,35 @@ namespace teemo
         {
             q->cast(target);
         }
+    }
+
+    void auto_q_if_killable()
+    {
+        if (!misc::auto_q_if_killable || !q->is_ready()) return;
+
+        for (auto&& enemy : entitylist->get_enemy_heroes())
+        {
+            if (enemy != nullptr && enemy->is_valid_target(q->range()))
+            {
+                float calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, get_q_raw_damage());
+                //5f to make sure HP doesn't regenerate before Q hit
+                if (calculated_damage >= enemy->get_health()+5.0f)
+                {
+                    if (q->cast(enemy))
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    float get_q_raw_damage()
+    {
+        float ap = myhero->get_total_ability_power();
+
+        float raw_damage = q_damages[q->level() - 1] + (q_ap_coef * ap);
+        return raw_damage;
     }
 
     void w_logic()

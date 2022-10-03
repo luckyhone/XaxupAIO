@@ -1,6 +1,6 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 
-PLUGIN_NAME( "Xaxup AIO" );
+PLUGIN_NAME( "XaxupAIO" );
 SUPPORTED_CHAMPIONS(champion_id::Teemo, champion_id::Amumu);
 
 #include "Teemo.h"

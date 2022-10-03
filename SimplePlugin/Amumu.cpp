@@ -53,7 +53,7 @@ namespace amumu
         Jungle
     };
 
-    Position my_hero_region;
+    Position my_hero_region;  
     int count_enemy_heroes_in_range(float range, vector from);
     int count_enemy_minions_in_range(float range, vector from);
     void check_for_killable_enemy();
@@ -83,7 +83,7 @@ namespace amumu
         else if (myhero->get_spell(spellslot::summoner2)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
             flash = plugin_sdk->register_spell(spellslot::summoner2, 400.f);
 
-        main_tab = menu->create_tab("amumu", "Xaxup AIO");
+        main_tab = menu->create_tab("amumu", "XaxupAIO");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
             auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo");
@@ -192,8 +192,8 @@ namespace amumu
         if (flash)
             plugin_sdk->remove_spell(flash);
 
-        event_handler<events::on_update>::remove_handler(on_update);
         antigapcloser::remove_event_handler(on_gapcloser);
+        event_handler<events::on_update>::remove_handler(on_update);        
     }
 
     void on_update()
@@ -503,7 +503,8 @@ namespace amumu
             if (enemy != nullptr && enemy->is_valid_target(r_radius))
             {
                 float calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, get_r_raw_damage());
-                if (calculated_damage >= enemy->get_health())
+                //5f to make sure HP doesn't regenerate before Q hit
+                if (calculated_damage >= enemy->get_health() + 5.0f)
                 {
                     if (r->cast() && r->is_ready())
                     {
@@ -512,7 +513,6 @@ namespace amumu
                 }
             }
         }
-
     }
 
     float get_r_raw_damage()
