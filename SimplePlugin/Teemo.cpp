@@ -56,6 +56,7 @@ namespace teemo
 
     Position my_hero_region;
 
+    void on_buff_gain(game_object_script sender, buff_instance_script buff);
     int count_enemy_minions_in_range(float range, vector from);
     float get_q_raw_damage();
     void auto_q_if_killable();
@@ -179,6 +180,7 @@ namespace teemo
 
         antigapcloser::add_event_handler(on_gapcloser);
         event_handler<events::on_after_attack_orbwalker>::add_callback(on_after_attack);
+        event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
         event_handler<events::on_update>::add_callback(on_update);
     }
 
@@ -194,8 +196,22 @@ namespace teemo
             plugin_sdk->remove_spell(flash);
 
         antigapcloser::remove_event_handler(on_gapcloser);
+
         event_handler<events::on_update>::remove_handler(on_update);
+        event_handler<events::on_buff_gain>::remove_handler(on_buff_gain);
         event_handler<events::on_after_attack_orbwalker>::remove_handler(on_after_attack);
+    }
+
+    void on_buff_gain(game_object_script sender, buff_instance_script buff)
+    {
+        if (sender == myhero)
+        {
+            auto buff_name = buff->get_name().c_str();
+            auto buff_hash = buff->get_hash_name();
+
+            console->print("Buff name: %s", buff_name);
+            console->print("Buff hash: %i", buff_hash);
+        }
     }
 
     void on_update()
@@ -434,11 +450,16 @@ namespace teemo
 
     void r_on_cc_logic()
     {
+        //zhonya 1036096934
+        //ga -718911512
+
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
             if (enemy != nullptr && enemy->is_valid_target(r->range()))
             {
                 auto buff = enemy->get_buff_by_type({ buff_type::Stun, buff_type::Snare, buff_type::Knockup, buff_type::Asleep, buff_type::Suppression, buff_type::Taunt});
+                auto zhonya = enemy->get_buff(1036096934);
+                auto ga = enemy->get_buff(-718911512);
 
                 if (buff != nullptr)
                 {
@@ -448,6 +469,20 @@ namespace teemo
                     if (remaining_time + buff_remaining_time_additional_time >= r->get_delay() + r_arm_time + r_travel_time)
                     {
                         if (r->cast(enemy))
+                        {
+                            last_r_use_time = gametime->get_time();
+                            return;
+                        }
+                    }
+                }
+                if (zhonya != nullptr || ga != nullptr)
+                {
+                    float remaining_time = buff->get_remaining_time();
+                    float r_travel_time = enemy->get_distance(myhero) / r_missile_speed;
+
+                    if (remaining_time + buff_remaining_time_additional_time >= r->get_delay() + r_arm_time + r_travel_time)
+                    {
+                        if (r->cast(enemy->get_position()))
                         {
                             last_r_use_time = gametime->get_time();
                             return;
