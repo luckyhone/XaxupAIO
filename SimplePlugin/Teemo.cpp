@@ -475,9 +475,23 @@ namespace teemo
                         }
                     }
                 }
-                if (zhonya != nullptr || ga != nullptr)
+                if (zhonya != nullptr)
                 {
-                    float remaining_time = buff->get_remaining_time();
+                    float remaining_time = zhonya->get_remaining_time();
+                    float r_travel_time = enemy->get_distance(myhero) / r_missile_speed;
+
+                    if (remaining_time + buff_remaining_time_additional_time >= r->get_delay() + r_arm_time + r_travel_time)
+                    {
+                        if (r->cast(enemy->get_position()))
+                        {
+                            last_r_use_time = gametime->get_time();
+                            return;
+                        }
+                    }
+                }
+                if (ga != nullptr)
+                {
+                    float remaining_time = ga->get_remaining_time();
                     float r_travel_time = enemy->get_distance(myhero) / r_missile_speed;
 
                     if (remaining_time + buff_remaining_time_additional_time >= r->get_delay() + r_arm_time + r_travel_time)
