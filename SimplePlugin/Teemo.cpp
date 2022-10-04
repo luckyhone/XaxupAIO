@@ -450,9 +450,6 @@ namespace teemo
 
     void r_on_cc_logic()
     {
-        //zhonya 1036096934
-        //ga -718911512
-
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
             if (enemy != nullptr && enemy->is_valid_target(r->range()))
