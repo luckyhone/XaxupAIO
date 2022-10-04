@@ -43,6 +43,7 @@ namespace amumu
         TreeEntry* use_w = nullptr;
         TreeEntry* use_e = nullptr;
         TreeEntry* min_monster_hp_to_q = nullptr;
+        TreeEntry* use_only_if_q_two_stacks = nullptr;
     }
     namespace misc
     {
@@ -168,6 +169,8 @@ namespace amumu
                 {
                     jungleclear::use_q = q_config->add_checkbox(myhero->get_model() + ".jungleClearUseQ", "Use Q", true);
                     jungleclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                    jungleclear::use_only_if_q_two_stacks = q_config->add_checkbox(myhero->get_model() + ".jungleClearUseQtTwo", "^~ use only if 2 stacks", true);
+                    jungleclear::min_monster_hp_to_q = q_config->add_slider(myhero->get_model() + ".jungleClearUseQSlider", "^~ use above monster X% HP", 20, 0, 99);
                 }
                 auto w_config = jungleclear->add_tab(myhero->get_model() + ".jungleClearWConfig", "W Settings");
                 {
@@ -330,9 +333,23 @@ namespace amumu
                     //Jungleclear logic
                     if (q->is_ready() && jungleclear::use_q->get_bool())
                     {
-                        if (q->cast(monsters.front()))
+                        auto monster_hp_percentage = monsters.front()->get_health_percent();
+                        if (monster_hp_percentage >= (float)jungleclear::min_monster_hp_to_q->get_int())
                         {
-                            return;
+                            if (jungleclear::use_only_if_q_two_stacks->get_bool() && q->ammo() == 2)
+                            {
+                                if (q->cast(monsters.front()))
+                                {
+                                    return;
+                                }
+                            }
+                            if (!jungleclear::use_only_if_q_two_stacks->get_bool())
+                            {
+                                if (q->cast(monsters.front()))
+                                {
+                                    return;
+                                }
+                            }
                         }
                     }
                     if (w->is_ready() && jungleclear::use_w->get_bool())
