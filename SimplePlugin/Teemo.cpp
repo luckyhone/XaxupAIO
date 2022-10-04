@@ -47,6 +47,13 @@ namespace teemo
     {
         TreeEntry* use_w = nullptr;
     }
+    namespace draw
+    {
+        TreeEntry* draw_range_q = nullptr;
+        TreeEntry* draw_range_r = nullptr;
+        TreeEntry* q_color = nullptr;
+        TreeEntry* r_color = nullptr;
+    }
 
     enum Position
     {
@@ -56,7 +63,7 @@ namespace teemo
 
     Position my_hero_region;
 
-    void on_buff_gain(game_object_script sender, buff_instance_script buff);
+    void on_draw();
     int count_enemy_minions_in_range(float range, vector from);
     float get_q_raw_damage();
     void auto_q_if_killable();
@@ -176,11 +183,18 @@ namespace teemo
                 flee::use_w = flee->add_checkbox(myhero->get_model() + ".fleeUseW", "Use W", true);
                 flee::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
             }
+            auto draw = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings");
+            {
+                float color[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+                draw::draw_range_q = draw->add_checkbox(myhero->get_model() + ".drawQ", "Draw Q Range", true);
+                draw::draw_range_r = draw->add_checkbox(myhero->get_model() + ".drawR", "Draw R Range", true);
+                draw::q_color = draw->add_colorpick(myhero->get_model() + ".drawQColor", "Q Color", color);
+                draw::r_color = draw->add_colorpick(myhero->get_model() + ".drawRColor", "R Color", color);
+            }
         }
-
         antigapcloser::add_event_handler(on_gapcloser);
+        event_handler<events::on_draw>::add_callback(on_draw);
         event_handler<events::on_after_attack_orbwalker>::add_callback(on_after_attack);
-        event_handler<events::on_buff_gain>::add_callback(on_buff_gain);
         event_handler<events::on_update>::add_callback(on_update);
     }
 
@@ -198,20 +212,8 @@ namespace teemo
         antigapcloser::remove_event_handler(on_gapcloser);
 
         event_handler<events::on_update>::remove_handler(on_update);
-        event_handler<events::on_buff_gain>::remove_handler(on_buff_gain);
+        event_handler<events::on_draw>::remove_handler(on_draw);
         event_handler<events::on_after_attack_orbwalker>::remove_handler(on_after_attack);
-    }
-
-    void on_buff_gain(game_object_script sender, buff_instance_script buff)
-    {
-        if (sender == myhero)
-        {
-            auto buff_name = buff->get_name().c_str();
-            auto buff_hash = buff->get_hash_name();
-
-            console->print("Buff name: %s", buff_name);
-            console->print("Buff hash: %i", buff_hash);
-        }
     }
 
     void on_update()
@@ -529,6 +531,24 @@ namespace teemo
             {
                 return;
             }
+        }
+    }
+
+    void on_draw()
+    {
+        if (myhero->is_dead())
+        {
+            return;
+        }
+
+        if (q->is_ready() && draw::draw_range_q->get_bool())
+        {
+            draw_manager->add_circle(myhero->get_position(), q->range(), draw::q_color->get_color());
+        }
+
+        if (r->is_ready() && draw::draw_range_r->get_bool())
+        {
+            draw_manager->add_circle(myhero->get_position(), r_ranges[r->level()-1], draw::r_color->get_color());
         }
     }
 }

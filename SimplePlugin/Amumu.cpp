@@ -49,6 +49,15 @@ namespace amumu
         TreeEntry* auto_q_on_gapclose = nullptr;
         TreeEntry* auto_r_if_killable = nullptr;
     }
+    namespace draw
+    {
+        TreeEntry* draw_range_q = nullptr;
+        TreeEntry* draw_range_we = nullptr;
+        TreeEntry* draw_range_r = nullptr;
+        TreeEntry* q_color = nullptr;
+        TreeEntry* we_color = nullptr;
+        TreeEntry* r_color = nullptr;
+    }
     enum Position
     {
         Line,
@@ -56,6 +65,7 @@ namespace amumu
     };
 
     Position my_hero_region;  
+    void on_draw();
     int count_enemy_heroes_in_range(float range, vector from);
     int count_enemy_minions_in_range(float range, vector from);
     void check_for_killable_enemy();
@@ -177,9 +187,20 @@ namespace amumu
                 misc::auto_r_if_killable = misc->add_checkbox(myhero->get_model() + ".miscAutoRIfKillable", "Auto R If Killable", true);
                 misc::auto_r_if_killable->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
             }
+            auto draw = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings");
+            {
+                float color[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+                draw::draw_range_q = draw->add_checkbox(myhero->get_model() + ".drawQ", "Draw Q Range", true);
+                draw::draw_range_we = draw->add_checkbox(myhero->get_model() + ".drawWE", "Draw W/E Range", true);
+                draw::draw_range_r = draw->add_checkbox(myhero->get_model() + ".drawR", "Draw R Range", true);
+                draw::q_color = draw->add_colorpick(myhero->get_model() + ".drawQColor", "Q Color", color);
+                draw::we_color = draw->add_colorpick(myhero->get_model() + ".drawWEColor", "W/E Color", color);
+                draw::r_color = draw->add_colorpick(myhero->get_model() + ".drawRColor", "R Color", color);
+            }
         }
 
         antigapcloser::add_event_handler(on_gapcloser);
+        event_handler<events::on_draw>::add_callback(on_draw);
         event_handler<events::on_update>::add_callback(on_update);
     }
 
@@ -196,6 +217,7 @@ namespace amumu
             plugin_sdk->remove_spell(flash);
 
         antigapcloser::remove_event_handler(on_gapcloser);
+        event_handler<events::on_draw>::remove_handler(on_draw);
         event_handler<events::on_update>::remove_handler(on_update);        
     }
 
@@ -555,5 +577,30 @@ namespace amumu
                 count++;
         }
         return count;
+    }
+    void on_draw()
+    {
+        if (myhero->is_dead())
+        {
+            return;
+        }
+
+        if (q->is_ready() && draw::draw_range_q->get_bool())
+        {
+            draw_manager->add_circle(myhero->get_position(), q->range(), draw::q_color->get_color());
+        }
+
+        if (w->is_ready() && draw::draw_range_we->get_bool())
+        {
+            draw_manager->add_circle(myhero->get_position(), 350.0f, draw::we_color->get_color());
+        }
+        if (e->is_ready() && draw::draw_range_we->get_bool())
+        {
+            draw_manager->add_circle(myhero->get_position(), 350.0f, draw::we_color->get_color());
+        }
+        if (r->is_ready() && draw::draw_range_r->get_bool())
+        {
+            draw_manager->add_circle(myhero->get_position(), r_radius, draw::r_color->get_color());
+        }
     }
 }
