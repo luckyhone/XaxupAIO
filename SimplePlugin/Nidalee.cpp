@@ -51,6 +51,7 @@ namespace nidalee
         TreeEntry* auto_switch_to_panther;
         TreeEntry* auto_switch_to_human;
         TreeEntry* min_monster_hp_to_q;
+        TreeEntry* ignore_on_epic_monsters;
     }
     namespace misc
     {
@@ -83,7 +84,6 @@ namespace nidalee
     };
 
     Position my_hero_region;
-
     void auto_w_on_cc_logic();
     void auto_heal_allies();
     bool is_human();
@@ -145,7 +145,7 @@ namespace nidalee
                 auto pantherECombo = combo->add_tab(".pantherEComboConfig", "E Settings");
                 {
                     combo::use_e_panther = pantherECombo->add_checkbox(".useEPantherCombo", "Use E", true);
-                }
+                }                
             }
             auto harass = main_tab->add_tab(myhero->get_model() + "harassS", "Harass");
             {
@@ -181,6 +181,7 @@ namespace nidalee
                 {
                     jungleclear::use_q_human = humanQJungle->add_checkbox(".useQHumanJungle", "Use Q", true);
                     jungleclear::min_monster_hp_to_q = humanQJungle->add_slider(".useQHumanJungleSlider", "^~ only if monster HP > X%", 25,1,99);
+                    jungleclear::ignore_on_epic_monsters = humanQJungle->add_checkbox(".useQHumanJungleSliderIgnore", "  ^~ ignore on epic monsters", true);
                 }               
                 auto humanWJungle = jungleclear->add_tab(".humanWJungleConfig", "W Settings");
                 {
@@ -280,7 +281,7 @@ namespace nidalee
         {   
             auto_w_on_cc_logic();
 
-            if (orbwalker->harass())
+            if (orbwalker->harass() && harass::use_q_human->get_bool())
             {
                 if (is_human())
                 {
@@ -301,11 +302,11 @@ namespace nidalee
                 }
                 else
                 {
-                    if (w_panther->is_ready())
+                    if (w_panther->is_ready() && combo::use_w_panther->get_bool())
                     {
                         panther_w_logic();
                     }
-                    if (e_panther->is_ready())
+                    if (e_panther->is_ready() && combo::use_e_panther->get_bool())
                     {
                         panther_e_logic();
                     }
@@ -389,11 +390,34 @@ namespace nidalee
                     //Jungle clear logic
                     if (is_human())
                     {
-                        if (q_human->is_ready() && jungleclear::use_q_human->get_bool() && monsters.front()->get_health_percent() > jungleclear::min_monster_hp_to_q->get_int())
+                        if (jungleclear::ignore_on_epic_monsters->get_bool())
                         {
-                            q_human->cast(monsters.back());
+                            if (!monsters.front()->is_epic_monster())
+                            {
+                                if (q_human->is_ready() && jungleclear::use_q_human->get_bool() && monsters.front()->get_health_percent() > jungleclear::min_monster_hp_to_q->get_int())
+                                {
+                                    q_human->cast(monsters.back());
+                                }
+                            }
+                            if (monsters.front()->is_epic_monster())
+                            {
+                                if (q_human->is_ready() && jungleclear::use_q_human->get_bool())
+                                {
+                                    q_human->cast(monsters.back());
+                                }
+                            }
                         }
-                        if (w_human->is_ready() && jungleclear::use_e_human->get_bool())
+                        else
+                        {
+                            if (monsters.front()->is_epic_monster() && monsters.front()->get_health_percent() > jungleclear::min_monster_hp_to_q->get_int())
+                            {
+                                if (q_human->is_ready() && jungleclear::use_q_human->get_bool())
+                                {
+                                    q_human->cast(monsters.back());
+                                }
+                            }
+                        }
+                        if (w_human->is_ready() && jungleclear::use_w_human->get_bool())
                         {
                             w_human->cast(monsters.back());
                         }
@@ -660,7 +684,7 @@ namespace nidalee
 
     void auto_heal_allies()
     {
-        if (myhero->is_dead() && myhero->is_recalling()) return;
+        if (myhero->is_dead() || myhero->is_recalling()) return;
 
         if (is_human() && e_human->is_ready() && misc::auto_e_on_self->get_bool())
         {

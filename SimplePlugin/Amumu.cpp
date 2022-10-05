@@ -559,7 +559,7 @@ namespace amumu
                 }
             }
 
-            if (best_enemy != nullptr && current_max_enemies >= combo::r_flash_minimum_enemies->get_int() && myhero->get_distance(best_enemy) < (flash->range() + r_radius - 20))
+            if (best_enemy != nullptr && !best_enemy->is_dead() && best_enemy->is_valid() && current_max_enemies >= combo::r_flash_minimum_enemies->get_int() && myhero->get_distance(best_enemy) < (flash->range() + r_radius - 20))
             {
                 flash->cast(best_enemy);
                 r->cast();
@@ -591,10 +591,9 @@ namespace amumu
 
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            if (enemy != nullptr && enemy->is_valid_target(r_radius))
+            if (enemy->is_valid_target(r_radius))
             {
                 float calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, get_r_raw_damage());
-                //5f to make sure HP doesn't regenerate before Q hit
                 if (calculated_damage >= enemy->get_health() + 5.0f)
                 {
                     if (r->is_ready() && r->cast())

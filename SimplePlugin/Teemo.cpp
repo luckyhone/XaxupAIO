@@ -525,6 +525,8 @@ namespace teemo
 
     void on_gapcloser(game_object_script sender, antigapcloser::antigapcloser_args* args)
     {
+        if (myhero->is_dead() || myhero->is_recalling()) return;
+
         if (myhero->is_under_enemy_turret())
         {
             if (!misc::auto_q_on_gapclose_dont_use_under_tower->get_bool())
