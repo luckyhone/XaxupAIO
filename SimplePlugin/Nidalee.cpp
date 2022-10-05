@@ -25,6 +25,10 @@ namespace nidalee
         TreeEntry* use_q_panther;
         TreeEntry* use_w_panther;
         TreeEntry* use_e_panther;
+    }   
+    namespace harass
+    {
+        TreeEntry* use_q_human;
     }
     namespace laneclear
     {
@@ -39,6 +43,7 @@ namespace nidalee
     namespace jungleclear
     {
         TreeEntry* use_q_human;
+        TreeEntry* use_w_human;
         TreeEntry* use_e_human;
         TreeEntry* use_q_panther;
         TreeEntry* use_w_panther;
@@ -142,6 +147,13 @@ namespace nidalee
                     combo::use_e_panther = pantherECombo->add_checkbox(".useEPantherCombo", "Use E", true);
                 }
             }
+            auto harass = main_tab->add_tab(myhero->get_model() + "harassS", "Harass");
+            {
+                auto humanQHarass = harass->add_tab(".humanQHrassConfig", "Q Settings");
+                {
+                    harass::use_q_human = humanQHarass->add_checkbox(".useQHumanHarass", "Use Q", true);
+                }
+            }
             auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Laneclear");
             {
                 laneclear->add_separator(".pantherLaneclearSeparator", "Panther Settings");
@@ -169,6 +181,10 @@ namespace nidalee
                 {
                     jungleclear::use_q_human = humanQJungle->add_checkbox(".useQHumanJungle", "Use Q", true);
                     jungleclear::min_monster_hp_to_q = humanQJungle->add_slider(".useQHumanJungleSlider", "^~ only if monster HP > X%", 25,1,99);
+                }               
+                auto humanWJungle = jungleclear->add_tab(".humanWJungleConfig", "W Settings");
+                {
+                    jungleclear::use_w_human = humanWJungle->add_checkbox(".useWHumanJungle", "Use W", true);
                 }
                 auto humanEJungle = jungleclear->add_tab(".humanEJungleConfig", "E Settings");
                 {
@@ -264,6 +280,16 @@ namespace nidalee
         {   
             auto_w_on_cc_logic();
 
+            if (orbwalker->harass())
+            {
+                if (is_human())
+                {
+                    if (q_human->is_ready() && harass::use_q_human->get_bool())
+                    {
+                        human_q_logic();
+                    }
+                }
+            }
             if (orbwalker->combo_mode())
             {
                 if (is_human())
@@ -367,13 +393,17 @@ namespace nidalee
                         {
                             q_human->cast(monsters.back());
                         }
+                        if (w_human->is_ready() && jungleclear::use_e_human->get_bool())
+                        {
+                            w_human->cast(monsters.back());
+                        }
                         if (e_human->is_ready() && jungleclear::use_e_human->get_bool())
                         {
-                            scheduler->delay_action(0.3f, [] { e_human->cast(myhero); });
+                            scheduler->delay_action(0.26f, [] { e_human->cast(myhero); });
                         }
-                        if (r->is_ready() && jungleclear::auto_switch_to_panther->get_bool() && !q_human->is_ready() && !e_human->is_ready())
+                        if (r->is_ready() && jungleclear::auto_switch_to_panther->get_bool() && !q_human->is_ready() && !e_human->is_ready() && !w_human->is_ready())
                         {
-                            scheduler->delay_action(0.3f, [] { r->cast(); });
+                            scheduler->delay_action(0.26f, [] { r->cast(); });
                         }
                     }
                     else
