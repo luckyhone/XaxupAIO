@@ -67,6 +67,8 @@ namespace amumu
 
     Position my_hero_region;  
     void on_draw();
+    void on_create_object(game_object_script sender);
+    void on_delete_object(game_object_script sender);
     int count_enemy_heroes_in_range(float range, vector from);
     int count_enemy_minions_in_range(float range, vector from);
     void check_for_killable_enemy();
@@ -79,6 +81,7 @@ namespace amumu
     void e_logic();
     void r_logic();
 
+    bool q_is_throwing = false;
     float r_radius = 550.0f;
     std::vector<float> r_damages = { 200,300,400 };
     float r_ap_coef = 0.8f;
@@ -122,7 +125,7 @@ namespace amumu
                 auto r_config = combo->add_tab(myhero->get_model() + ".comboRConfig", "R Settings");
                 {
                     combo::use_r = r_config->add_checkbox(myhero->get_model() + ".comboRConfigUseR", "Use R", true);
-                    combo::r_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRConfigMinREnemies", "^~ minimum enemies in range", 3, 1, 5);
+                    combo::r_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRConfigMinREnemies", "^~ minimum enemies in range", 2, 1, 5);
                     combo::use_r_flash = r_config->add_checkbox(myhero->get_model() + ".comboRConfigUseRFlash", "Use R+Flash", true);
                     combo::r_flash_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRFlashConfigMinREnemies", "^~ minimum enemies stunned", 3, 1, 5);
                 }
@@ -212,6 +215,8 @@ namespace amumu
         antigapcloser::add_event_handler(on_gapcloser);
         event_handler<events::on_draw>::add_callback(on_draw);
         event_handler<events::on_update>::add_callback(on_update);
+        event_handler<events::on_create_object>::add_callback(on_create_object);
+        event_handler<events::on_delete_object>::add_callback(on_delete_object);
     }
 
     void unload()
@@ -227,6 +232,8 @@ namespace amumu
             plugin_sdk->remove_spell(flash);
 
         antigapcloser::remove_event_handler(on_gapcloser);
+        event_handler<events::on_create_object>::remove_handler(on_create_object);
+        event_handler<events::on_delete_object>::remove_handler(on_delete_object);
         event_handler<events::on_draw>::remove_handler(on_draw);
         event_handler<events::on_update>::remove_handler(on_update);        
     }
@@ -492,6 +499,30 @@ namespace amumu
         }
     }
 
+    void on_create_object(game_object_script sender) 
+    {
+
+        if (sender->is_valid() && !sender->is_dead() && sender->get_name() == "SadMummyBandageToss")
+        {
+            scheduler->delay_action(0.1f, []() {
+
+                q_is_throwing = true;
+
+                });
+        }
+
+    }
+
+    void on_delete_object(game_object_script sender) 
+    {
+
+        if (sender->is_valid() && !sender->is_dead() && sender->get_name() == "SadMummyBandageToss")
+        {
+            q_is_throwing = false;
+        }
+
+    }
+
     void r_logic()
     {
         auto enemies_in_r_range = myhero->count_enemies_in_range(r_radius);
@@ -506,13 +537,14 @@ namespace amumu
         else
         {
             if (!combo::use_r_flash->get_bool()) return;
+            if (q_is_throwing) return;
 
             game_object_script best_enemy;
             int current_max_enemies = 0;
 
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (enemy != nullptr && enemy->is_valid_target(r_radius+flash->range()))
+                if (enemy->is_valid_target(r_radius+flash->range()))
                 {
                     vector enemy_position = enemy->get_position();
                     vector position_after_flash = myhero->get_position().extend(enemy_position, flash->range());
@@ -551,7 +583,7 @@ namespace amumu
 
     void check_for_killable_enemy()
     {
-        if (!misc::auto_r_if_killable) return;
+        if (!misc::auto_r_if_killable->get_bool()) return;
 
         auto enemies_in_r_range = myhero->count_enemies_in_range(r_radius);
 
@@ -565,7 +597,7 @@ namespace amumu
                 //5f to make sure HP doesn't regenerate before Q hit
                 if (calculated_damage >= enemy->get_health() + 5.0f)
                 {
-                    if (r->cast() && r->is_ready())
+                    if (r->is_ready() && r->cast())
                     {
                         return;
                     }

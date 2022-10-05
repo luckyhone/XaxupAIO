@@ -630,6 +630,8 @@ namespace nidalee
 
     void auto_heal_allies()
     {
+        if (myhero->is_dead() && myhero->is_recalling()) return;
+
         if (is_human() && e_human->is_ready() && misc::auto_e_on_self->get_bool())
         {
             if (myhero->get_health_percent() < (float)misc::auto_e_self_hp_under->get_int())
