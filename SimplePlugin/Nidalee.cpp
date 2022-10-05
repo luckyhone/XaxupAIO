@@ -382,7 +382,6 @@ namespace nidalee
                         {
                             if (myhero->has_buff(buff_hash("NidaleePassiveHunting")))
                             {
-                                console->print("Ma marka!");
                                 if (monsters.front()->get_distance(myhero->get_position()) <= 750)
                                 {
                                     w_panther->cast(monsters.front());
@@ -390,7 +389,6 @@ namespace nidalee
                             }
                             else
                             {
-                                console->print("Nie ma marka!");
                                 if (monsters.front()->get_distance(myhero->get_position()) <= 375)
                                 {
                                     w_panther->cast(monsters.front());
@@ -532,8 +530,8 @@ namespace nidalee
     {
         if (sender->is_ai_hero())
         {
-            console->print("Name: %s", buff->get_name_cstr());
-            console->print("Hash: %i",buff->get_hash_name());
+            //console->print("Name: %s", buff->get_name_cstr());
+            //console->print("Hash: %i",buff->get_hash_name());
         }
     }
 
@@ -546,13 +544,6 @@ namespace nidalee
             if (q_human->is_ready())
             {
                 q_human->cast(target, hit_chance::high);
-                if (combo::use_e_human->get_bool())
-                {
-                    if (e_human->is_ready())
-                    {
-                        myhero->cast_spell(e_human->slot, myhero, true);
-                    }
-                }
             }
         }
     }
