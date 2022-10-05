@@ -158,14 +158,18 @@
     <ClCompile Include="..\plugin_sdk\plugin_sdk.cpp" />
     <ClCompile Include="Amumu.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Nidalee.cpp" />
     <ClCompile Include="Teemo.cpp" />
+    <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\clipper.h" />
     <ClInclude Include="..\plugin_sdk\cpplinq.h" />
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
     <ClInclude Include="Amumu.h" />
+    <ClInclude Include="Nidalee.h" />
     <ClInclude Include="Teemo.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -99,8 +99,10 @@ namespace amumu
         main_tab = menu->create_tab("amumu", "XaxupAIO");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
+            main_tab->add_separator(".predSep", "USE CORE PRED");
             auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo");
             {
+                combo->add_separator(".comboSep", "Combo");
                 auto q_config = combo->add_tab(myhero->get_model() + "comboQConfig", "Q Settings");
                 {
                     combo::use_q = q_config->add_checkbox(myhero->get_model() + ".comboUseQ", "Use Q", true);
@@ -127,6 +129,7 @@ namespace amumu
             }
             auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
             {
+                harass->add_separator(".harassSep", "Harass");
                 auto q_config = harass->add_tab(myhero->get_model() + ".harassQConfig", "Q Settings");
                 {
                     harass::use_q = q_config->add_checkbox(myhero->get_model() + ".harassUseQ", "Use Q", true);
@@ -145,6 +148,7 @@ namespace amumu
             }
             auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Laneclear");
             {
+                laneclear->add_separator(".laneSep", "Laneclear");
                 auto q_config = laneclear->add_tab(myhero->get_model() + ".laneClearQConfig", "Q Settings");
                 {
                     laneclear::use_q = q_config->add_checkbox(myhero->get_model() + ".laneClearUseQ", "Use Q", false);
@@ -165,6 +169,7 @@ namespace amumu
             }
             auto jungleclear = main_tab->add_tab(myhero->get_model() + ".jungleClear", "Jungleclear");
             {
+                jungleclear->add_separator(".jungleSep", "Jungleclear");
                 auto q_config = jungleclear->add_tab(myhero->get_model() + ".jungleClearQConfig", "Q Settings");
                 {
                     jungleclear::use_q = q_config->add_checkbox(myhero->get_model() + ".jungleClearUseQ", "Use Q", true);
@@ -185,6 +190,7 @@ namespace amumu
             }
             auto misc = main_tab->add_tab(myhero->get_model() + ".misc", "Misc");
             {
+                misc->add_separator(".miscSep", "Misc");
                 misc::auto_q_on_gapclose = misc->add_checkbox(myhero->get_model() + ".miscAutoQGapclose", "Auto Q On Gapclose", true);
                 misc::auto_q_on_gapclose->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
                 misc::auto_r_if_killable = misc->add_checkbox(myhero->get_model() + ".miscAutoRIfKillable", "Auto R If Killable", true);
@@ -192,6 +198,7 @@ namespace amumu
             }
             auto draw = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings");
             {
+                draw->add_separator(".drawSep", "Drawings");
                 float color[] = { 1.0f, 1.0f, 0.0f, 1.0f };
                 draw::draw_range_q = draw->add_checkbox(myhero->get_model() + ".drawQ", "Draw Q Range", true);
                 draw::draw_range_we = draw->add_checkbox(myhero->get_model() + ".drawWE", "Draw W/E Range", true);

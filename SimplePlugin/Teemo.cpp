@@ -42,6 +42,7 @@ namespace teemo
         TreeEntry* auto_w_on_gapclose = nullptr;
         TreeEntry* auto_r_cc = nullptr;
         TreeEntry* auto_r_cc_only_in_combo = nullptr;
+        TreeEntry* auto_q_on_gapclose_dont_use_under_tower = nullptr;
     }
     namespace flee
     {
@@ -101,8 +102,10 @@ namespace teemo
         main_tab = menu->create_tab("teemo", "XaxupAIO");
         main_tab->set_assigned_texture(myhero->get_square_icon_portrait());
         {
+            main_tab->add_separator(".predSep", "USE AURORA PRED");
             auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo");
             {
+                combo->add_separator(".comboSep", "Combo");
                 auto q_config = combo->add_tab(myhero->get_model() + "comboQConfig", "Q Settings");
                 {
                     combo::use_q = q_config->add_checkbox(myhero->get_model() + ".comboUseQ", "Use Q", true);
@@ -120,8 +123,9 @@ namespace teemo
                     combo::r_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRConfigMinREnemies", "Minimum Enemies In Explosion Range", 3, 1, 5);
                 }
             }
-            auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
+            auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Harass");
             {
+                harass->add_separator(".harassSep", "Harass");
                 auto q_config = harass->add_tab(myhero->get_model() + ".harassQConfig", "Q Settings");
                 {
                     harass::use_q = q_config->add_checkbox(myhero->get_model() + ".harassUseQ", "Use Q", true);
@@ -130,6 +134,7 @@ namespace teemo
             }
             auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Laneclear");
             {
+                laneclear->add_separator(".laneSep", "Laneclear");
                 auto q_config = laneclear->add_tab(myhero->get_model() + ".laneClearQConfig", "Q Settings");
                 {
                     laneclear::use_q = q_config->add_checkbox(myhero->get_model() + ".laneClearUseQ", "Use Q", false);
@@ -144,6 +149,7 @@ namespace teemo
             }
             auto jungleclear = main_tab->add_tab(myhero->get_model() + ".jungleClear", "Jungleclear");
             {
+                jungleclear->add_separator(".jungleSep", "Jungleclear");
                 auto q_config = jungleclear->add_tab(myhero->get_model() + ".jungleClearQConfig", "Q Settings");
                 {
                     jungleclear::use_q = q_config->add_checkbox(myhero->get_model() + ".jungleClearUseQ", "Use Q", true);
@@ -159,9 +165,11 @@ namespace teemo
             }
             auto misc = main_tab->add_tab(myhero->get_model() + ".misc", "Misc");
             {
+                misc->add_separator(".miscSep", "Misc");
                 auto gapclose = misc->add_tab(myhero->get_model() + ".miscGapclose", "Gapclose");
                 {
                     misc::auto_q_on_gapclose = gapclose->add_checkbox(myhero->get_model() + ".miscAutoQGapclose", "Auto Q On Gapclose", true);
+                    misc::auto_q_on_gapclose_dont_use_under_tower = gapclose->add_checkbox(myhero->get_model() + ".miscAutoQGapcloseTower", "^~ don't use under tower", true);
                     misc::auto_q_on_gapclose->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());                   
                     misc::auto_w_on_gapclose = gapclose->add_checkbox(myhero->get_model() + ".miscAutoWGapclose", "Auto W On Gapclose", true);
                     misc::auto_w_on_gapclose->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
@@ -180,11 +188,13 @@ namespace teemo
             }
             auto flee = main_tab->add_tab(myhero->get_model() + ".flee", "Flee");
             {
+                flee->add_separator(".fleeSep", "Flee");
                 flee::use_w = flee->add_checkbox(myhero->get_model() + ".fleeUseW", "Use W", true);
                 flee::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
             }
             auto draw = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings");
             {
+                draw->add_separator(".drawSep", "Drawings");
                 float color[] = { 1.0f, 1.0f, 0.0f, 1.0f };
                 draw::draw_range_q = draw->add_checkbox(myhero->get_model() + ".drawQ", "Draw Q Range", true);
                 draw::draw_range_r = draw->add_checkbox(myhero->get_model() + ".drawR", "Draw R Range", true);
@@ -296,7 +306,7 @@ namespace teemo
                             {
                                 auto predicted_position = r->get_prediction(enemy_minion).get_cast_position();
                                 
-                                if (count_enemy_minions_in_range(explosion_range, predicted_position) >= laneclear::minimum_minions_to_r->get_int())
+                                if (count_enemy_minions_in_range(explosion_range, predicted_position) >= laneclear::minimum_minions_to_r->get_int() && enemy_minion->get_health_percent() > 10.0f)
                                 {
                                     if (r->cast(enemy_minion))
                                     {
@@ -454,7 +464,7 @@ namespace teemo
     {
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            if (enemy != nullptr && enemy->is_valid_target(r->range()))
+            if (enemy != nullptr && myhero->get_distance(enemy->get_position()) <= r->range())
             {
                 auto buff = enemy->get_buff_by_type({ buff_type::Stun, buff_type::Snare, buff_type::Knockup, buff_type::Asleep, buff_type::Suppression, buff_type::Taunt});
                 auto zhonya = enemy->get_buff(1036096934);
@@ -515,13 +525,32 @@ namespace teemo
 
     void on_gapcloser(game_object_script sender, antigapcloser::antigapcloser_args* args)
     {
-        if (q->is_ready() && misc::auto_q_on_gapclose->get_bool())
+        if (myhero->is_under_enemy_turret())
         {
-            if (sender->is_valid_target(q->range() + sender->get_bounding_radius()))
+            if (!misc::auto_q_on_gapclose_dont_use_under_tower->get_bool())
             {
-                if (q->cast(sender))
+                if (q->is_ready() && misc::auto_q_on_gapclose->get_bool())
                 {
-                    return;
+                    if (sender->is_valid_target(q->range() + sender->get_bounding_radius()))
+                    {
+                        if (q->cast(sender))
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (q->is_ready() && misc::auto_q_on_gapclose->get_bool())
+            {
+                if (sender->is_valid_target(q->range() + sender->get_bounding_radius()))
+                {
+                    if (q->cast(sender))
+                    {
+                        return;
+                    }
                 }
             }
         }
