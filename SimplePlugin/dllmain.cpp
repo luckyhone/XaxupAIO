@@ -36,6 +36,12 @@ PLUGIN_API void on_sdk_unload()
     case champion_id::Teemo:
         teemo::unload();
         break;
+    case champion_id::Amumu:
+        amumu::unload();
+        break;
+    case champion_id::Nidalee:
+        nidalee::unload();
+        break;
     default:
         break;
     }
