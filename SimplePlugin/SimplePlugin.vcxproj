@@ -75,6 +75,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>C:\Users\Xaxup\AppData\Roaming\f369a378c6bc52588602c2636ccc8bd0\plugins\x86</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -159,8 +160,10 @@
     <ClCompile Include="Amumu.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Nidalee.cpp" />
+    <ClCompile Include="permashow.cpp" />
     <ClCompile Include="Teemo.cpp" />
     <ClCompile Include="Utilities.cpp" />
+    <ClCompile Include="Ziggs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\clipper.h" />
@@ -168,8 +171,10 @@
     <ClInclude Include="..\plugin_sdk\plugin_sdk.hpp" />
     <ClInclude Include="Amumu.h" />
     <ClInclude Include="Nidalee.h" />
+    <ClInclude Include="permashow.hpp" />
     <ClInclude Include="Teemo.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="Ziggs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -31,6 +31,12 @@
     <ClCompile Include="Utilities.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Ziggs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="permashow.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -46,5 +52,7 @@
     <ClInclude Include="Amumu.h" />
     <ClInclude Include="Nidalee.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="Ziggs.h" />
+    <ClInclude Include="permashow.hpp" />
   </ItemGroup>
 </Project>

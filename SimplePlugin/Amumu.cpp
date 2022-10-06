@@ -121,10 +121,12 @@ namespace amumu
                 auto e_config = combo->add_tab(myhero->get_model() + ".comboEConfig", "E Settings");
                 {
                     combo::use_e = e_config->add_checkbox(myhero->get_model() + ".comboEConfigUseR", "Use E", true);
+                    combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
                 }             
                 auto r_config = combo->add_tab(myhero->get_model() + ".comboRConfig", "R Settings");
                 {
                     combo::use_r = r_config->add_checkbox(myhero->get_model() + ".comboRConfigUseR", "Use R", true);
+                    combo::use_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
                     combo::r_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRConfigMinREnemies", "^~ minimum enemies in range", 2, 1, 5);
                     combo::use_r_flash = r_config->add_checkbox(myhero->get_model() + ".comboRConfigUseRFlash", "Use R+Flash", true);
                     combo::r_flash_minimum_enemies = r_config->add_slider(myhero->get_model() + ".comboRFlashConfigMinREnemies", "^~ minimum enemies stunned", 3, 1, 5);
@@ -141,12 +143,12 @@ namespace amumu
                 auto w_config = harass->add_tab(myhero->get_model() + ".harassWConfig", "W Settings");
                 {
                     harass::use_w = w_config->add_checkbox(myhero->get_model() + ".harassUseW", "Use W", true);
-                    harass::use_w->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                    harass::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
                 }
                 auto e_config = harass->add_tab(myhero->get_model() + ".harassEConfig", "E Settings");
                 {
                     harass::use_e = e_config->add_checkbox(myhero->get_model() + ".harassUseE", "Use E", true);
-                    harass::use_e->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                    harass::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
                 }
             }
             auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Laneclear");
@@ -160,14 +162,14 @@ namespace amumu
                 auto w_config = laneclear->add_tab(myhero->get_model() + ".laneClearWConfig", "W Settings");
                 {
                     laneclear::use_w = w_config->add_checkbox(myhero->get_model() + ".laneClearUseW", "Use W", true);
-                    laneclear::use_w->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                    laneclear::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
                     laneclear::w_minimum_minions = w_config->add_slider(myhero->get_model() + ".laneClearWMinMinions", "^~ minimum minions to cast", 3, 1, 6);
                 }
                 auto e_cofig = laneclear->add_tab(myhero->get_model() + ".laneClearEConfig", "E Settings");
                 {
                     laneclear::use_e = e_cofig->add_checkbox(myhero->get_model() + ".laneClearUseE", "Use E", true);
                     laneclear::e_minimum_minions = e_cofig->add_slider(myhero->get_model() + ".laneClearEMinMinions", "^~ minimum minions to cast", 3, 1, 6);               
-                    laneclear::use_e->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                    laneclear::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
                 }
             }
             auto jungleclear = main_tab->add_tab(myhero->get_model() + ".jungleClear", "Jungleclear");
@@ -183,12 +185,12 @@ namespace amumu
                 auto w_config = jungleclear->add_tab(myhero->get_model() + ".jungleClearWConfig", "W Settings");
                 {
                     jungleclear::use_w = w_config->add_checkbox(myhero->get_model() + ".jungleClearUseW", "Use W", true);
-                    jungleclear::use_w->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                    jungleclear::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
                 }
                 auto e_config = jungleclear->add_tab(myhero->get_model() + ".jungleClearEConfig", "E Settings");
                 {
                     jungleclear::use_e = e_config->add_checkbox(myhero->get_model() + ".jungleClearUseE", "Use E", true);
-                    jungleclear::use_e->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+                    jungleclear::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
                 }
             }
             auto misc = main_tab->add_tab(myhero->get_model() + ".misc", "Misc");
@@ -501,7 +503,6 @@ namespace amumu
 
     void on_create_object(game_object_script sender) 
     {
-
         if (sender->is_valid() && !sender->is_dead() && sender->get_name() == "SadMummyBandageToss")
         {
             scheduler->delay_action(0.1f, []() {
@@ -510,17 +511,14 @@ namespace amumu
 
                 });
         }
-
     }
 
     void on_delete_object(game_object_script sender) 
     {
-
         if (sender->is_valid() && !sender->is_dead() && sender->get_name() == "SadMummyBandageToss")
         {
             q_is_throwing = false;
         }
-
     }
 
     void r_logic()

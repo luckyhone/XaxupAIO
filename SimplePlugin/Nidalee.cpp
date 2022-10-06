@@ -19,6 +19,7 @@ namespace nidalee
 
     namespace combo
     {
+        TreeEntry* use_aa_q_in_combo;
         TreeEntry* use_q_human;
         TreeEntry* q_human_range;
         TreeEntry* use_e_human;
@@ -134,6 +135,7 @@ namespace nidalee
                     combo::use_e_human = humanECombo->add_checkbox(".useEHumanCombo", "Use E after Q (for AS boost and heal)", true);                  
                 }
                 combo->add_separator(".pantherComboSeparator", "Panther Settings");
+                combo::use_aa_q_in_combo = combo->add_checkbox(".dontAAQPantherCombo", "Use AA-Q in combo (off = just Q)", false);
                 auto pantherQCombo = combo->add_tab(".pantherQComboConfig", "Q Settings");
                 {
                     combo::use_q_panther = pantherQCombo->add_checkbox(".useQPantherCombo", "Use Q", true);
@@ -302,6 +304,10 @@ namespace nidalee
                 }
                 else
                 {
+                    if (combo::use_q_human->get_bool() && !combo::use_aa_q_in_combo->get_bool() && q_panther->is_ready())
+                    {
+                        q_panther->cast();
+                    }
                     if (w_panther->is_ready() && combo::use_w_panther->get_bool())
                     {
                         panther_w_logic();
@@ -509,13 +515,16 @@ namespace nidalee
     {
         if (is_panther())
         {
-            if (q_panther->is_ready() && target != nullptr && target->is_ai_hero())
+            if (combo::use_aa_q_in_combo)
             {
-                if (((orbwalker->combo_mode() && combo::use_q_panther->get_bool())))
+                if (q_panther->is_ready() && target != nullptr && target->is_ai_hero())
                 {
-                    if (q_panther->cast(target))
+                    if (((orbwalker->combo_mode() && combo::use_q_panther->get_bool())))
                     {
-                        return;
+                        if (q_panther->cast(target))
+                        {
+                            return;
+                        }
                     }
                 }
             }
