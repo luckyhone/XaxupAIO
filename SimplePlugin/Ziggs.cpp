@@ -421,7 +421,7 @@ namespace ziggs
 
         for (auto&& enemy : entitylist->get_enemy_heroes())
         {
-            if (enemy->is_valid_target(1250) && w->is_ready() && r->is_ready())
+            if (enemy->is_valid_target(1350) && w->is_ready() && r->is_ready())
             {
                 if(!utilities::has_cc(enemy)) return;
                 if (is_killable_with_q(enemy)) return;
@@ -505,7 +505,7 @@ namespace ziggs
 
     void harass_logic()
     {
-        auto target = target_selector->get_target(1150, damage_type::magical);
+        auto target = target_selector->get_target(1300, damage_type::magical);
 
         if (target != nullptr)
         {
@@ -513,11 +513,11 @@ namespace ziggs
             {
                 q->cast(target, hit_chance::medium);
             }
-            if (w->is_ready() && harass::use_w->get_bool())
+            if (w->is_ready() && harass::use_w->get_bool() && target->get_distance(myhero->get_position()) <= w->range())
             {
                 w->cast(target->get_position());
             }
-            if (e->is_ready() && harass::use_e->get_bool())
+            if (e->is_ready() && harass::use_e->get_bool() && target->get_distance(myhero->get_position()) <= e->range())
             {
                 e->cast(target, hit_chance::medium);
             }
@@ -567,15 +567,15 @@ namespace ziggs
 
     void e_in_w_pos_combo_logic()
     {
-        auto target = target_selector->get_target(1150, damage_type::magical);
+        auto target = target_selector->get_target(1250, damage_type::magical);
 
         if (target != nullptr)
         {
-            if (q->is_ready() && combo::use_q->get_bool())
+            if (q->is_ready() && combo::use_q->get_bool() && target->get_distance(myhero->get_position()) <= q->range())
             {
                 q->cast(target, hit_chance::medium);
             }
-            if (w->is_ready() && !w_casted && !myhero->has_buff(buff_hash("ZiggsW")) && combo::use_w->get_bool())
+            if (w->is_ready() && !w_casted && !myhero->has_buff(buff_hash("ZiggsW")) && combo::use_w->get_bool() && target->get_distance(myhero->get_position()) <= w->range())
             {
                 if (combo::w_hp_diff_to_push_away->get_int() < target->get_health_percent() - myhero->get_health_percent())
                 {
@@ -668,11 +668,11 @@ namespace ziggs
 
     void basic_combo_logic()
     {
-        auto target = target_selector->get_target(1150, damage_type::magical);
+        auto target = target_selector->get_target(1250, damage_type::magical);
 
         if (target != nullptr)
         {
-            if (e->is_ready() && combo::use_e->get_bool())
+            if (e->is_ready() && combo::use_e->get_bool() && target->get_distance(myhero->get_position()) <= e->range())
             {
                 e->cast(target, hit_chance::medium);
             }
@@ -680,7 +680,7 @@ namespace ziggs
             {
                 q->cast(target, hit_chance::medium);
             }
-            if (w->is_ready() && !w_casted && !myhero->has_buff(buff_hash("ZiggsW") && combo::use_w->get_bool()))
+            if (w->is_ready() && !w_casted && !myhero->has_buff(buff_hash("ZiggsW") && combo::use_w->get_bool()) && target->get_distance(myhero->get_position()) <= w->range())
             {
                 if (combo::w_hp_diff_to_push_away->get_int() < target->get_health_percent() - myhero->get_health_percent())
                 {
