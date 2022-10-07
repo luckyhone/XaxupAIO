@@ -619,7 +619,7 @@ namespace nidalee
         {
            if(target->has_buff(-226832744))
            {
-               if (target->is_valid_target(750))
+               if (target->is_valid_target(730))
                {
                    if (w_panther->is_ready())
                    {
