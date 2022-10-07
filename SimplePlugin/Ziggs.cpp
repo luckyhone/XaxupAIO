@@ -5,6 +5,7 @@
 
 namespace ziggs
 {
+    bool is_killable_with__r_auto_kill(game_object_script enemy, float additionalHP);
     bool is_killable_with__r(game_object_script enemy);
     inline void draw_dmg_rl(game_object_script target, float damage, unsigned long color);
     void auto_r_if_killable();
@@ -474,6 +475,18 @@ namespace ziggs
         return false;
     }
 
+    bool is_killable_with__r_auto_kill(game_object_script enemy, float additionalHP)
+    {
+        float r_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, utilities::get_ap_raw_damage(r, r_coef, r_damages));
+
+        if (r_calculated_damage > enemy->get_health() + additionalHP)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 
     bool is_killable_with_w_r(game_object_script enemy)
     {
@@ -521,11 +534,25 @@ namespace ziggs
         {
             if (is_killable_with_q(target) && q->is_ready() && target->is_valid_target(q->range())) return;
 
-            if (is_killable_with__r(target))
+            if (is_killable_with__r(target) && target->count_allies_in_range(300) < 2)
             {
                 for (auto&& enemy : entitylist->get_enemy_heroes())
                 {
-                    if (enemy->is_valid_target(400))
+                    if (enemy->is_valid_target(200))
+                    {
+                        return;
+                    }
+                }
+
+                //Overkill protection to do
+
+                r->cast(target, hit_chance::medium);
+            }
+            else if (is_killable_with__r_auto_kill(target, 200))
+            {
+                for (auto&& enemy : entitylist->get_enemy_heroes())
+                {
+                    if (enemy->is_valid_target(200))
                     {
                         return;
                     }
