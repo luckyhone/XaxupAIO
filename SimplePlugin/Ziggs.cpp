@@ -288,7 +288,7 @@ namespace ziggs
 
                 if (target != nullptr)
                 {
-                    r->cast(target);
+                    r->cast(target, hit_chance::high);
                 }
             }
 
@@ -546,7 +546,7 @@ namespace ziggs
 
                 //Overkill protection to do
 
-                r->cast(target, hit_chance::medium);
+                r->cast(target, hit_chance::high);
             }
             else if (is_killable_with__r_auto_kill(target, 200))
             {
@@ -560,7 +560,7 @@ namespace ziggs
 
                 //Overkill protection to do
 
-                r->cast(target, hit_chance::medium);
+                r->cast(target, hit_chance::high);
             }
         }
     }
