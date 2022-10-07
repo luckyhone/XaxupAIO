@@ -525,13 +525,15 @@ namespace ziggs
             {
                 for (auto&& enemy : entitylist->get_enemy_heroes())
                 {
-                    if (enemy->is_valid_target(500))
+                    if (enemy->is_valid_target(400))
                     {
                         return;
                     }
                 }
 
-                r->cast(target);
+                //Overkill protection to do
+
+                r->cast(target, hit_chance::medium);
             }
         }
     }
