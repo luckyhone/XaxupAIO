@@ -224,7 +224,7 @@ namespace ziggs
         }
         auto hotkeys = main_tab->add_tab(myhero->get_model() + ".hotkeys", "Hotkeys");
         {
-            misc->add_separator(".hotkeysSep", "Hotkeys");
+            hotkeys->add_separator(".hotkeysSep", "Hotkeys");
             permashow::semi_r_key = hotkeys->add_hotkey(".rManualHotkey", "Semi R", TreeHotkeyMode::Hold, 'A', true);
         }
         auto draw = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings");
