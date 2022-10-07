@@ -197,6 +197,11 @@ namespace ziggs
                 jungleclear::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
             }
         }
+        auto flee = main_tab->add_tab(myhero->get_model() + ".flee", "Flee");
+        {
+            flee->add_separator(".fleeSep", "Flee");
+            flee::use_w = flee->add_checkbox(myhero->get_model() + ".fleeW", "Use W", true);
+        }
         auto misc = main_tab->add_tab(myhero->get_model() + ".misc", "Misc");
         {
             misc->add_separator(".miscSep", "Misc");
@@ -313,7 +318,7 @@ namespace ziggs
             }
             if (orbwalker->flee_mode())
             {
-                if (w->is_ready())
+                if (w->is_ready() && flee::use_w->get_bool())
                 {
                     vector mouse_pos = hud->get_hud_input_logic()->get_game_cursor_position();
                     vector my_pos = myhero->get_position();
