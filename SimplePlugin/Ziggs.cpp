@@ -5,8 +5,8 @@
 
 namespace ziggs
 {
-    bool is_killable_with__r_auto_kill(game_object_script enemy, float additionalHP);
-    bool is_killable_with__r(game_object_script enemy);
+    bool is_killable_with_r_auto_kill(game_object_script enemy, float additionalHP);
+    bool is_killable_with_r(game_object_script enemy);
     inline void draw_dmg_rl(game_object_script target, float damage, unsigned long color);
     void auto_r_if_killable();
     void auto_w_on_chanelling_spells();
@@ -466,7 +466,7 @@ namespace ziggs
         return false;
     }
 
-    bool is_killable_with__r(game_object_script enemy)
+    bool is_killable_with_r(game_object_script enemy)
     {      
         float r_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, utilities::get_ap_raw_damage(r, r_coef, r_damages));
 
@@ -478,7 +478,7 @@ namespace ziggs
         return false;
     }
 
-    bool is_killable_with__r_auto_kill(game_object_script enemy, float additionalHP)
+    bool is_killable_with_r_auto_kill(game_object_script enemy, float additionalHP)
     {
         float r_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, utilities::get_ap_raw_damage(r, r_coef, r_damages));
 
@@ -536,39 +536,31 @@ namespace ziggs
         if(target != nullptr)
         {
             if (is_killable_with_q(target) && q->is_ready() && target->is_valid_target(q->range())) return;
+            if (target->count_allies_in_range(400) >= 2) return;
 
-            if (is_killable_with__r(target) && target->count_allies_in_range(300) < 2)
+            for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                for (auto&& enemy : entitylist->get_enemy_heroes())
+                if (enemy->is_valid_target(250))
                 {
-                    if (enemy->is_valid_target(200))
-                    {
-                        return;
-                    }
+                    return;
                 }
+            }
 
-                //Overkill protection to do
-
+            if (target->count_allies_in_range(600) == 0 && is_killable_with_r_auto_kill(target, 75))
+            {
                 r->cast(target, hit_chance::high);
             }
-            else if (is_killable_with__r_auto_kill(target, 200))
+            if (target->count_allies_in_range(600) == 1 && is_killable_with_r_auto_kill(target, 300))
             {
-                for (auto&& enemy : entitylist->get_enemy_heroes())
-                {
-                    if (enemy->is_valid_target(200))
-                    {
-                        return;
-                    }
-                }
-
-                //Overkill protection
-                //t = s/v
-                float r_travel_time = (0.375f + myhero->get_distance(target)) / 1550.0f;
-
-                if (health_prediction->get_incoming_damage(target, r_travel_time, true) < target->get_health())
-                {
-                    r->cast(target, hit_chance::high);
-                }
+                r->cast(target, hit_chance::high);
+            }
+            if (target->count_allies_in_range(600) == 2 && is_killable_with_r_auto_kill(target, 600))
+            {
+                r->cast(target, hit_chance::high);
+            }
+            if (target->count_allies_in_range(600) > 2 && is_killable_with_r_auto_kill(target, 1000))
+            {
+                r->cast(target, hit_chance::high);
             }
         }
     }
@@ -577,13 +569,13 @@ namespace ziggs
     {
         auto target = target_selector->get_target(1250, damage_type::magical);
 
-        if (target != nullptr)
+        if (target != nullptr && !target->is_invulnerable())
         {
-            if (q->is_ready() && combo::use_q->get_bool() && target->get_distance(myhero->get_position()) <= q->range())
+            if (q->is_ready() && !target->is_invulnerable() && combo::use_q->get_bool() && target->get_distance(myhero->get_position()) <= q->range())
             {
                 q->cast(target, hit_chance::medium);
             }
-            if (w->is_ready() && !w_casted && !myhero->has_buff(buff_hash("ZiggsW")) && combo::use_w->get_bool() && target->get_distance(myhero->get_position()) <= w->range())
+            if (w->is_ready() && !target->is_invulnerable() && !w_casted && !myhero->has_buff(buff_hash("ZiggsW")) && combo::use_w->get_bool() && target->get_distance(myhero->get_position()) <= w->range())
             {
                 if (combo::w_hp_diff_to_push_away->get_int() < target->get_health_percent() - myhero->get_health_percent())
                 {
@@ -678,7 +670,7 @@ namespace ziggs
     {
         auto target = target_selector->get_target(1250, damage_type::magical);
 
-        if (target != nullptr)
+        if (target != nullptr && !target->is_invulnerable())
         {
             if (e->is_ready() && combo::use_e->get_bool() && target->get_distance(myhero->get_position()) <= e->range())
             {
@@ -885,7 +877,7 @@ namespace ziggs
             if (!enemy->is_dead() && enemy->is_valid() && enemy->is_hpbar_recently_rendered() && r->is_ready())
             {
                 draw_dmg_rl(enemy, r->get_damage(enemy), 4294929002);
-                if (is_killable_with__r(enemy))
+                if (is_killable_with_r(enemy))
                 {
                     if (!draw::draw_r_killable->get_bool()) return;
 

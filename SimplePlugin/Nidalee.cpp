@@ -626,7 +626,7 @@ namespace nidalee
                {
                    if (w_panther->is_ready())
                    {
-                       if (w_panther->cast(target))
+                       if (!target->is_invulnerable() && w_panther->cast(target))
                        {
                            return;
                        }
@@ -639,7 +639,7 @@ namespace nidalee
                {
                    if (w_panther->is_ready())
                    {
-                       if (w_panther->cast(target))
+                       if (!target->is_invulnerable() && w_panther->cast(target))
                        {
                            return;  
                        }
@@ -657,7 +657,7 @@ namespace nidalee
         {
             if (e_panther->is_ready() && target->is_valid_target(310))
             {
-                if (e_panther->cast(target->get_position()))
+                if (!target->is_invulnerable() && e_panther->cast(target->get_position()))
                 {
                     return;
                 }
