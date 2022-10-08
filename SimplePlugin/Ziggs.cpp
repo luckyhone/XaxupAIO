@@ -540,7 +540,7 @@ namespace ziggs
 
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (enemy->is_valid_target(250))
+                if (enemy->is_valid_target(400))
                 {
                     return;
                 }
