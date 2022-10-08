@@ -151,7 +151,7 @@ namespace ziggs
                 combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
             }
             combo::korea_combo = combo->add_checkbox(".koreanHiddenCombo", "Use Korean Hidden Combo", true);
-            combo::combo_mode = combo->add_combobox(".comboMode", "Combo Mode", { {"Basic Combo", myhero->get_square_icon_portrait()},{"E into W predicted pos", myhero->get_square_icon_portrait()} }, 1);
+            combo::combo_mode = combo->add_combobox(".comboMode", "Combo Mode", { {"Basic Combo", myhero->get_square_icon_portrait()},{"E into W predicted pos", myhero->get_square_icon_portrait()} }, 0);
         }            
         auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
         {
