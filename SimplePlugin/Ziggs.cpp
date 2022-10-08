@@ -110,7 +110,10 @@ namespace ziggs
 
     void load()
     {
-        q = plugin_sdk->register_spell(spellslot::q, 850);
+        myhero->print_chat(0x3, "<font color=\"#FFFFFF\">[<b><font color=\"#3F704D\">Ziggs | XaxupAIO</font></b>]:</font> <font color=\"#90EE90\">Loaded</font>");
+        myhero->print_chat(0x3, "<font color=\"#3F704D\"><b>Suggested Prediction: </b><font color=\"#90EE90\">Core</font></font>");
+
+        q = plugin_sdk->register_spell(spellslot::q, 1225);
         w = plugin_sdk->register_spell(spellslot::w, 1000);
         e = plugin_sdk->register_spell(spellslot::e, 900);
         r = plugin_sdk->register_spell(spellslot::r, 5000);
@@ -558,9 +561,14 @@ namespace ziggs
                     }
                 }
 
-                //Overkill protection to do
+                //Overkill protection
+                //t = s/v
+                float r_travel_time = (0.375f + myhero->get_distance(target)) / 1550.0f;
 
-                r->cast(target, hit_chance::high);
+                if (health_prediction->get_incoming_damage(target, r_travel_time, true) < target->get_health())
+                {
+                    r->cast(target, hit_chance::high);
+                }
             }
         }
     }
@@ -857,7 +865,7 @@ namespace ziggs
 
         if (q->is_ready() && draw::draw_range_q->get_bool())
         {
-            draw_manager->add_circle(myhero->get_position(), q->range(), draw::q_color->get_color());
+            draw_manager->add_circle(myhero->get_position(), 850, draw::q_color->get_color());
         }
         if (w->is_ready() && draw::draw_range_w->get_bool())
         {
@@ -884,7 +892,7 @@ namespace ziggs
                     auto pos = myhero->get_position();
                     renderer->world_to_screen(pos, pos); 
                     vector vector = { (float)renderer->screen_width()/2 - 250 ,(float)renderer->screen_height()-300 };
-                    draw_manager->add_text_on_screen(vector, 4278249728, 38, "ENEMY KILLABLE IN R RANGE");
+                    draw_manager->add_text_on_screen(vector, 4278249728, 38, "%s KILLABLE IN R RANGE", enemy->get_name_cstr());
                 }
             }
         }
