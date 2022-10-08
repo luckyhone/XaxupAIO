@@ -536,7 +536,7 @@ namespace ziggs
         if(target != nullptr)
         {
             if (is_killable_with_q(target) && q->is_ready() && target->is_valid_target(q->range())) return;
-            if (target->count_allies_in_range(400) >= 2) return;
+            if (target->count_allies_in_range(550) >= 2) return;
 
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
@@ -548,19 +548,19 @@ namespace ziggs
 
             if (target->count_allies_in_range(600) == 0 && is_killable_with_r_auto_kill(target, 75))
             {
-                r->cast(target, hit_chance::high);
+                r->cast(target, hit_chance::medium);
             }
             if (target->count_allies_in_range(600) == 1 && is_killable_with_r_auto_kill(target, 300))
             {
-                r->cast(target, hit_chance::high);
+                r->cast(target, hit_chance::medium);
             }
             if (target->count_allies_in_range(600) == 2 && is_killable_with_r_auto_kill(target, 600))
             {
-                r->cast(target, hit_chance::high);
+                r->cast(target, hit_chance::medium);
             }
             if (target->count_allies_in_range(600) > 2 && is_killable_with_r_auto_kill(target, 1000))
             {
-                r->cast(target, hit_chance::high);
+                r->cast(target, hit_chance::medium);
             }
         }
     }
