@@ -649,7 +649,7 @@ namespace ziggs
             {
                 w->cast();
             }
-            if (target->has_buff(buff_hash("moveawaycollision")))
+            if (target->has_buff(buff_hash("moveawaycollision")) && target->is_valid_target(e->range()))
             {
                 auto pred_output = e->get_prediction(target);
                 if (pred_output.get_cast_position().is_valid() && e->is_ready() && combo::use_e->get_bool())
@@ -666,7 +666,7 @@ namespace ziggs
             }
             else
             {
-                if (e->is_ready() && combo::use_e->get_bool())
+                if (e->is_ready() && combo::use_e->get_bool() && target->is_valid_target(e->range()))
                 {
                     e->cast(target);
                 }
@@ -892,7 +892,7 @@ namespace ziggs
                     auto pos = myhero->get_position();
                     renderer->world_to_screen(pos, pos); 
                     vector vector = { (float)renderer->screen_width()/2 - 250 ,(float)renderer->screen_height()-300 };
-                    draw_manager->add_text_on_screen(vector, 4278249728, 38, "%s KILLABLE IN R RANGE", enemy->get_name_cstr());
+                    draw_manager->add_text_on_screen(vector, 4278249728, 38, "%s KILLABLE IN R RANGE", enemy->get_model_cstr());
                 }
             }
         }
