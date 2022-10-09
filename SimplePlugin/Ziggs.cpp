@@ -6,6 +6,7 @@
 namespace ziggs
 {
     bool is_killable_with_r_auto_kill(game_object_script enemy, float additionalHP);
+    bool is_killable_with_w(game_object_script enemy);
     bool is_killable_with_r(game_object_script enemy);
     inline void draw_dmg_rl(game_object_script target, float damage, unsigned long color);
     void auto_r_if_killable();
@@ -35,6 +36,7 @@ namespace ziggs
     {
         TreeEntry* use_q;
         TreeEntry* use_w;
+        TreeEntry* use_w_only_when_e_ready;
         TreeEntry* use_e;
         TreeEntry* use_r;
         TreeEntry* w_hp_diff_to_push_away;
@@ -143,7 +145,8 @@ namespace ziggs
             {
                 combo::use_w = w_config->add_checkbox(myhero->get_model() + ".comboUseW", "Use W", true);
                 combo::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-                combo::w_hp_diff_to_push_away = w_config->add_slider(".qPushAwaySlider", "Push Enemy Away If EnemyHP%-YourHP% >", 17, 1, 99);
+                combo::use_w_only_when_e_ready = w_config->add_checkbox(myhero->get_model() + ".comboUseWOnlyWhenE", "^~ use only when E ready or when killable", true);
+                combo::w_hp_diff_to_push_away = w_config->add_slider(".qPushAwaySlider", "Push Enemy Away If EnemyHP%-YourHP% >", 20, 1, 99);
             }
             auto e_config = combo->add_tab(myhero->get_model() + ".comboEConfig", "E Settings");
             {
@@ -478,6 +481,18 @@ namespace ziggs
         return false;
     }
 
+
+    bool is_killable_with_w(game_object_script enemy)
+    {
+        float w_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, utilities::get_ap_raw_damage(w, w_coef, w_damages));
+
+        if (w_calculated_damage > enemy->get_health()-5)
+        {
+            return true;
+        }
+
+        return false;
+    }
     bool is_killable_with_r_auto_kill(game_object_script enemy, float additionalHP)
     {
         float r_calculated_damage = damagelib->calculate_damage_on_unit(myhero, enemy, damage_type::magical, utilities::get_ap_raw_damage(r, r_coef, r_damages));
@@ -536,31 +551,31 @@ namespace ziggs
         if(target != nullptr)
         {
             if (is_killable_with_q(target) && q->is_ready() && target->is_valid_target(q->range())) return;
-            if (target->count_allies_in_range(550) >= 2) return;
+            if (target->count_allies_in_range(550) >= 2 && target->get_health_percent() < 13) return;
 
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
-                if (enemy->is_valid_target(400))
+                if (enemy->is_valid_target(e->range()))
                 {
                     return;
                 }
             }
 
-            if (target->count_allies_in_range(600) == 0 && is_killable_with_r_auto_kill(target, 75))
+            if (target->count_allies_in_range(700) == 0 && is_killable_with_r_auto_kill(target, 120))
             {
-                r->cast(target, hit_chance::medium);
+                r->cast(target, hit_chance::high);
             }
-            if (target->count_allies_in_range(600) == 1 && is_killable_with_r_auto_kill(target, 300))
+            if (target->count_allies_in_range(700) == 1 && is_killable_with_r_auto_kill(target, 370))
             {
-                r->cast(target, hit_chance::medium);
+                r->cast(target, hit_chance::high);
             }
-            if (target->count_allies_in_range(600) == 2 && is_killable_with_r_auto_kill(target, 600))
+            if (target->count_allies_in_range(700) == 2 && is_killable_with_r_auto_kill(target, 650))
             {
-                r->cast(target, hit_chance::medium);
+                r->cast(target, hit_chance::high);
             }
-            if (target->count_allies_in_range(600) > 2 && is_killable_with_r_auto_kill(target, 1000))
+            if (target->count_allies_in_range(700) > 2 && is_killable_with_r_auto_kill(target, 1100))
             {
-                r->cast(target, hit_chance::medium);
+                r->cast(target, hit_chance::high);
             }
         }
     }
@@ -577,6 +592,11 @@ namespace ziggs
             }
             if (w->is_ready() && !target->is_invulnerable() && !w_casted && !myhero->has_buff(buff_hash("ZiggsW")) && combo::use_w->get_bool() && target->get_distance(myhero->get_position()) <= w->range())
             {
+                if (is_killable_with_w(target))
+                {
+                    w->cast(target, hit_chance::medium);
+                }
+
                 if (combo::w_hp_diff_to_push_away->get_int() < target->get_health_percent() - myhero->get_health_percent())
                 {
                     if (!target->is_facing(myhero) && myhero->is_facing(target))
@@ -590,7 +610,11 @@ namespace ziggs
                             auto pos = myhero->get_position().extend(target->get_position(), dist + 165.5f + (dist_traveled_until_w_casted));
 
                             w_cast_pos = pos;
-                            w->cast(pos);
+
+                            if(combo::use_w_only_when_e_ready->get_bool() && e->is_ready())
+                                w->cast(pos);
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(pos);
                         }
                     }
                     if (!myhero->is_facing(target) && target->is_facing(myhero))
@@ -605,7 +629,16 @@ namespace ziggs
                             auto pos = myhero->get_position().extend(target->get_position(), dist - 165.5f - (dist_traveled_until_w_casted));
 
                             w_cast_pos = pos;
-                            w->cast(pos);
+
+                            if (is_killable_with_w(target))
+                            {
+                                w->cast(pos);
+                            }
+
+                            if (combo::use_w_only_when_e_ready->get_bool() && e->is_ready())
+                                w->cast(pos);
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(pos);
                         }
                     }
                 }
@@ -621,18 +654,27 @@ namespace ziggs
                             auto dist = myhero->get_distance(target);
                             auto pos = myhero->get_position().extend(target->get_position(), dist + 165.5f + (dist_traveled_until_w_casted));
 
-                            w->cast(pos);
+                            if (combo::use_w_only_when_e_ready->get_bool() && e->is_ready())
+                                w->cast(pos);
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(pos);
                         }
                         else
                         {
-                            w->cast(target->get_position());
+                            if (combo::use_w_only_when_e_ready->get_bool() && e->is_ready())
+                                w->cast(target->get_position());
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(target->get_position());
                         }
                     }
                     else
                     {
                         if (combo::use_w->get_bool())
                         {
-                            w->cast(target->get_position());
+                            if (combo::use_w_only_when_e_ready->get_bool() && e->is_ready())
+                                w->cast(target->get_position());
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(target->get_position());
                         }
                     }
                 }
@@ -694,7 +736,10 @@ namespace ziggs
                             auto dist = myhero->get_distance(target);
                             auto pos = myhero->get_position().extend(target->get_position(), dist + 165.5f + (dist_traveled_until_w_casted));
 
-                            w->cast(pos);
+                            if(combo::use_w_only_when_e_ready->get_bool() && e_casted)
+                                w->cast(pos);
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(pos);
                         }
                     }
                     if (!myhero->is_facing(target) && target->is_facing(myhero))
@@ -707,7 +752,10 @@ namespace ziggs
                             auto dist = myhero->get_distance(target);
                             auto pos = myhero->get_position().extend(target->get_position(), dist - 165.5f - (dist_traveled_until_w_casted));
 
-                            w->cast(pos);
+                            if (combo::use_w_only_when_e_ready->get_bool() && e_casted)
+                                w->cast(pos);
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(pos);
                         }
                     }
                 }
@@ -723,18 +771,27 @@ namespace ziggs
                             auto dist = myhero->get_distance(target);
                             auto pos = myhero->get_position().extend(target->get_position(), dist + 165.5f + (dist_traveled_until_w_casted));
 
-                            w->cast(pos);
+                            if (combo::use_w_only_when_e_ready->get_bool() && e_casted)
+                                w->cast(pos);
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(pos);
                         }
                         else
                         {
-                            w->cast(target->get_position());
+                            if (combo::use_w_only_when_e_ready->get_bool() && e_casted)
+                                w->cast(target->get_position());
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(target->get_position());
                         }
                     }
                     else
                     {
                         if (combo::use_w->get_bool())
                         {
-                            w->cast(target->get_position());
+                            if (combo::use_w_only_when_e_ready->get_bool() && e_casted)
+                                w->cast(target->get_position());
+                            if (!combo::use_w_only_when_e_ready->get_bool())
+                                w->cast(target->get_position());
                         }
                     }
                 }
@@ -779,6 +836,11 @@ namespace ziggs
             if (spell->get_spellslot() == spellslot::r)
             {
                 scheduler->delay_action(0.26f, [] { korean_executing = false; });
+            }
+            if (spell->get_spellslot() == spellslot::e)
+            {
+                e_casted = true;
+                scheduler->delay_action(1.0f, [] { e_casted = false; });
             }
         }
     }
