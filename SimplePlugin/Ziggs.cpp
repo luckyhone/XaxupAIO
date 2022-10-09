@@ -374,7 +374,7 @@ namespace ziggs
                     {
                         vector target_minion_pos = lane_minions.front()->get_position();
 
-                        if (e->cast(lane_minions.front()->get_position()) && utilities::count_enemy_minions_in_range(325, target_minion_pos) >= laneclear::e_minimum_minions->get_int())
+                        if (e->cast(lane_minions.front()->get_position()) && utilities::count_enemy_minions_in_range(305, target_minion_pos) >= laneclear::e_minimum_minions->get_int())
                         {
                             return;
                         }
