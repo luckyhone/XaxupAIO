@@ -62,6 +62,10 @@ namespace taliyah
 		TreeEntry* auto_w_on_channeling;
 		TreeEntry* auto_w_on_gapclose;
 	}
+	namespace permashow
+	{
+		TreeEntry* spell_farm = nullptr;
+	}
 	namespace draw
 	{
 		TreeEntry* draw_q;
@@ -184,6 +188,11 @@ namespace taliyah
 				misc::auto_w_on_channeling = misc->add_checkbox(myhero->get_model() + ".miscAutoWChanneling", "Auto W On Channeling", true);
 				misc::auto_w_on_channeling->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
 			}
+			auto hotkeys = main_tab->add_tab(myhero->get_model() + ".hotkeys", "Hotkeys");
+			{
+				hotkeys->add_separator(".hotkeysSep", "Hotkeys");
+				permashow::spell_farm = hotkeys->add_hotkey(".spellFarm", "Spell Farm", TreeHotkeyMode::Toggle, 'A', true);
+			}
 			auto draw = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings");
 			{
 				draw->add_separator(".drawSep", "Drawings");
@@ -195,6 +204,11 @@ namespace taliyah
 				draw::w_color = draw->add_colorpick(myhero->get_model() + ".drawWColor", "W Color", color);
 				draw::e_color = draw->add_colorpick(myhero->get_model() + ".drawEColor", "E Color", color);
 			}
+		}
+
+		{
+			Permashow::Instance.Init(main_tab);
+			Permashow::Instance.AddElement("Spell Farm", permashow::spell_farm);
 		}
 
 		antigapcloser::add_event_handler(on_gapcloser);
@@ -213,6 +227,8 @@ namespace taliyah
 		plugin_sdk->remove_spell(q);
 		plugin_sdk->remove_spell(w);
 		plugin_sdk->remove_spell(e);
+
+		Permashow::Instance.Destroy();
 
 		if (flash)
 			plugin_sdk->remove_spell(flash);
@@ -242,6 +258,7 @@ namespace taliyah
 			}
 			if (orbwalker->lane_clear_mode())
 			{
+				if (!permashow::spell_farm->get_bool()) return;
 				auto lane_minions = entitylist->get_enemy_minions();
 				auto monsters = entitylist->get_jugnle_mobs_minions();
 
@@ -270,6 +287,7 @@ namespace taliyah
 
 				if (!lane_minions.empty())
 				{
+
 					if (e->is_ready() && laneclear::use_e->get_bool() && lane_minions.front()->is_valid_target(e->range()))
 					{
 						e->cast(lane_minions.front()->get_position());
@@ -476,6 +494,27 @@ namespace taliyah
 		if (myhero->is_dead())
 		{
 			return;
+		}
+
+		for (auto&& enemy : entitylist->get_enemy_heroes())
+		{
+			if (myhero->get_distance(enemy->get_position()) < 1200)
+			{
+				auto distance = myhero->get_distance(enemy->get_position());
+
+				if(distance > 500)
+				{
+					auto pos = enemy->get_position();
+					renderer->world_to_screen(pos, pos);
+					draw_manager->add_text_on_screen(pos + vector(-60, 10), 4278781960, 20, "Pushing towards");
+				}
+				else
+				{
+					auto pos = enemy->get_position();
+					renderer->world_to_screen(pos, pos);
+					draw_manager->add_text_on_screen(pos + vector(-50, 10), 4278781960, 20, "Pushing away");
+				}
+			}
 		}
 
 		if (q->is_ready() && draw::draw_q->get_bool())
