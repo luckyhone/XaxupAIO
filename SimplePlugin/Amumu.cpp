@@ -624,6 +624,7 @@ namespace amumu
         }
         return count;
     }    
+
     int count_enemy_heroes_in_range(float range, vector from)
     {
         int count = 0;
@@ -634,6 +635,7 @@ namespace amumu
         }
         return count;
     }
+
     void on_draw()
     {
         if (myhero->is_dead())
@@ -645,7 +647,6 @@ namespace amumu
         {
             draw_manager->add_circle(myhero->get_position(), q->range(), draw::q_color->get_color());
         }
-
         if (w->is_ready() && draw::draw_range_we->get_bool())
         {
             draw_manager->add_circle(myhero->get_position(), 350.0f, draw::we_color->get_color());

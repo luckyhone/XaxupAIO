@@ -881,7 +881,7 @@ namespace ziggs
 
     inline void draw_dmg_rl(game_object_script target, float damage, unsigned long color)
     {
-        if (target != nullptr && target->is_valid() && target->is_hpbar_recently_rendered())
+        if (target != nullptr && target->is_valid() && target->is_hpbar_recently_rendered() && !target->is_zombie())
         {
             auto bar_pos = target->get_hpbar_pos();
 
@@ -936,7 +936,7 @@ namespace ziggs
      
         for (auto& enemy : entitylist->get_enemy_heroes()) 
         {
-            if (!enemy->is_dead() && enemy->is_valid() && enemy->is_hpbar_recently_rendered() && r->is_ready())
+            if (!enemy->is_dead() && enemy->is_valid() && enemy->is_hpbar_recently_rendered() && r->is_ready() && !enemy->is_zombie())
             {
                 draw_dmg_rl(enemy, r->get_damage(enemy), 4294929002);
                 if (is_killable_with_r(enemy))
