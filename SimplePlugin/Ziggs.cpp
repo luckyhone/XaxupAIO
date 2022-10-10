@@ -120,7 +120,7 @@ namespace ziggs
         e = plugin_sdk->register_spell(spellslot::e, 900);
         r = plugin_sdk->register_spell(spellslot::r, 5000);
 
-        q->set_skillshot(0.25, 140, 1700, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
+        q->set_skillshot(0.25, 133, 1700, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
         w->set_skillshot(0.25, 325, 1750, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_circle);
         e->set_skillshot(0.25, 325, 1550, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_circle);
         r->set_skillshot(0.375, 525, 2250, { }, skillshot_type::skillshot_circle);
