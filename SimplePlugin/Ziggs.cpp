@@ -227,7 +227,7 @@ namespace ziggs
             misc::auto_w_on_destroyable_turret->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
             misc::use_r_if_killable = misc->add_checkbox(myhero->get_model() + ".miscAutoRKilalble", "Auto R if killable", true);
             misc::use_r_if_killable->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
-            misc::only_if_no_enemies_nearby = misc->add_checkbox(myhero->get_model() + ".miscAutoRKilalbleEnemies", "^~ only if no enemies nearby", true);
+            misc::only_if_no_enemies_nearby = misc->add_checkbox(myhero->get_model() + ".miscAutoRKilalbleEnemies", "^~ only if no enemies nearby", false);
         }
         auto hotkeys = main_tab->add_tab(myhero->get_model() + ".hotkeys", "Hotkeys");
         {
@@ -551,33 +551,34 @@ namespace ziggs
 
         if(target != nullptr)
         {
-            if (is_killable_with_q(target) && q->is_ready() && target->is_valid_target(q->range())) return;
+            if (is_killable_with_q(target) && q->is_ready() && target->is_valid_target(q->range()-150)) return;
             if (target->count_allies_in_range(550) >= 2 && target->get_health_percent() < 13) return;
 
             for (auto&& enemy : entitylist->get_enemy_heroes())
             {
                 if (enemy->is_valid_target(e->range()))
                 {
+                    if (enemy == target)continue;
                     return;
                 }
             }
 
-            if (target->count_allies_in_range(700) == 0 && is_killable_with_r_auto_kill(target, 120))
+            if (target->count_allies_in_range(700) == 0 && is_killable_with_r_auto_kill(target, 20))
             {
                 auto cast_position = r->get_prediction(target).get_unit_position();            
                 r->cast(cast_position);
             }
-            if (target->count_allies_in_range(700) == 1 && is_killable_with_r_auto_kill(target, 370))
+            if (target->count_allies_in_range(700) == 1 && is_killable_with_r_auto_kill(target, 300))
             {
                 auto cast_position = r->get_prediction(target).get_unit_position();
                 r->cast(cast_position);
             }
-            if (target->count_allies_in_range(700) == 2 && is_killable_with_r_auto_kill(target, 650))
+            if (target->count_allies_in_range(700) == 2 && is_killable_with_r_auto_kill(target, 600))
             {
                 auto cast_position = r->get_prediction(target).get_unit_position();
                 r->cast(cast_position);
             }
-            if (target->count_allies_in_range(700) > 2 && is_killable_with_r_auto_kill(target, 1100))
+            if (target->count_allies_in_range(700) > 2 && is_killable_with_r_auto_kill(target, 800))
             {
                 auto cast_position = r->get_prediction(target).get_unit_position();
                 r->cast(cast_position);
