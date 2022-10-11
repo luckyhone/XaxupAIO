@@ -145,7 +145,7 @@ namespace ziggs
             {
                 combo::use_w = w_config->add_checkbox(myhero->get_model() + ".comboUseW", "Use W", true);
                 combo::use_w->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-                combo::use_w_only_when_e_ready = w_config->add_checkbox(myhero->get_model() + ".comboUseWOnlyWhenE", "^~ use only when E ready or when killable", true);
+                combo::use_w_only_when_e_ready = w_config->add_checkbox(myhero->get_model() + ".comboUseWOnlyWhenE", "^~ use only when E ready or when killable", false);
                 combo::w_hp_diff_to_push_away = w_config->add_slider(".qPushAwaySlider", "Push Enemy Away If EnemyHP%-YourHP% >", 20, 1, 99);
             }
             auto e_config = combo->add_tab(myhero->get_model() + ".comboEConfig", "E Settings");
