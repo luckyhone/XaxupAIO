@@ -498,7 +498,7 @@ namespace taliyah
 					use_e = true;
 
 					if(target->is_valid_target(e->range()) && (orbwalker->combo_mode() || orbwalker->harass()))
-						scheduler->delay_action(0.21f, [target] 
+						scheduler->delay_action(0.251f, [target] 
 							{ 
 								if(use_e)
 									e->cast(target->get_position()); 
