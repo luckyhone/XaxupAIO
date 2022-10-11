@@ -81,12 +81,12 @@ namespace taliyah
 
 	void load()
 	{
-		myhero->print_chat(0x3, "<font color=\"#FFFFFF\">[<b><font color=\"#3F704D\">Taliyah | XaxupAIO</font></b>]:</font> <font color=\"#90EE90\">Loaded</font>");
+		myhero->print_chat(0x3, "<font color=\"#FFFFFF\">[<b><font color=\"#3F704D\">Taliyah | XaxupAIO</font></b>]</font><font color=\"#3F704D\">:</font><font color=\"#90EE90\"> Loaded</font>");
 		myhero->print_chat(0x3, "<font color=\"#3F704D\"><b>Suggested Prediction: </b><font color=\"#90EE90\">Aurora</font></font>");
 
 		q = plugin_sdk->register_spell(spellslot::q, 1000);
 		w = plugin_sdk->register_spell(spellslot::w, 900);
-		e = plugin_sdk->register_spell(spellslot::e, 950);
+		e = plugin_sdk->register_spell(spellslot::e, 925);
 
 		q->set_skillshot(0.25f, 100, 3300, { collisionable_objects::heroes, collisionable_objects::yasuo_wall, collisionable_objects::minions }, skillshot_type::skillshot_line);
 		w->set_skillshot(0.25f, 112, FLT_MAX, {}, skillshot_type::skillshot_circle);
@@ -121,7 +121,7 @@ namespace taliyah
 			{
 				combo::use_e = e_config->add_checkbox(myhero->get_model() + ".comboEConfigUse", "Use E", true);
 				combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-				combo::use_e_only_when_w_ready = e_config->add_checkbox(myhero->get_model() + ".comboEConfigUseWhenW", "^~ use only when W ready", false);
+				combo::use_e_only_when_w_ready = e_config->add_checkbox(myhero->get_model() + ".comboEConfigUseWhenW", "^~ use only when W ready", true);
 			}
 			auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
 			{
@@ -442,20 +442,6 @@ namespace taliyah
 				{
 					auto cast_position = w->get_prediction(target).get_unit_position();
 					w->cast(cast_position, myhero->get_position());
-				}
-			}
-		}
-	}
-
-	void auto_e_on_dashing()
-	{
-		for (auto&& enemy : entitylist->get_enemy_heroes())
-		{
-			if (enemy->is_valid_target(e->range()) && !enemy->is_dead() && !enemy->is_zombie())
-			{
-				if (enemy->is_dashing())
-				{
-					//auto end_dash_position = enemy->get_path();
 				}
 			}
 		}

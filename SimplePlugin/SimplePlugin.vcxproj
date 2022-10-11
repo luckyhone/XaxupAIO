@@ -161,6 +161,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Nidalee.cpp" />
     <ClCompile Include="permashow.cpp" />
+    <ClCompile Include="Riven.cpp" />
     <ClCompile Include="Taliyah.cpp" />
     <ClCompile Include="Teemo.cpp" />
     <ClCompile Include="Utilities.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="Amumu.h" />
     <ClInclude Include="Nidalee.h" />
     <ClInclude Include="permashow.hpp" />
+    <ClInclude Include="Riven.h" />
     <ClInclude Include="Taliyah.h" />
     <ClInclude Include="Teemo.h" />
     <ClInclude Include="Utilities.h" />

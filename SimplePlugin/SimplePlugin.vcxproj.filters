@@ -40,6 +40,9 @@
     <ClCompile Include="Taliyah.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Riven.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\plugin_sdk\cpplinq.h">
@@ -58,5 +61,6 @@
     <ClInclude Include="Ziggs.h" />
     <ClInclude Include="permashow.hpp" />
     <ClInclude Include="Taliyah.h" />
+    <ClInclude Include="Riven.h" />
   </ItemGroup>
 </Project>

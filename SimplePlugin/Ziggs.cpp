@@ -112,7 +112,7 @@ namespace ziggs
 
     void load()
     {
-        myhero->print_chat(0x3, "<font color=\"#FFFFFF\">[<b><font color=\"#3F704D\">Ziggs | XaxupAIO</font></b>]:</font> <font color=\"#90EE90\">Loaded</font>");
+        myhero->print_chat(0x3, "<font color=\"#FFFFFF\">[<b><font color=\"#3F704D\">Ziggs | XaxupAIO</font></b>]</font><font color=\"#3F704D\">:</font><font color=\"#90EE90\"> Loaded</font>");
         myhero->print_chat(0x3, "<font color=\"#3F704D\"><b>Suggested Prediction: </b><font color=\"#90EE90\">Core</font></font>");
 
         q = plugin_sdk->register_spell(spellslot::q, 1225);
