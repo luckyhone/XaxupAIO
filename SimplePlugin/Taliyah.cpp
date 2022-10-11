@@ -5,6 +5,8 @@
 
 namespace taliyah
 {
+	bool is_enemy_closer_to_turret_than_me(game_object_script enemy);
+	bool is_enemy_close_to_turret(game_object_script enemy);
 	void on_process_spell_cast(game_object_script sender, spell_instance_script spell);
 	void on_draw();
 	void auto_w_on_chanelling_spells();
@@ -65,6 +67,7 @@ namespace taliyah
 	namespace permashow
 	{
 		TreeEntry* spell_farm = nullptr;
+		TreeEntry* semi_w_key = nullptr;
 	}
 	namespace draw
 	{
@@ -118,7 +121,7 @@ namespace taliyah
 			{
 				combo::use_e = e_config->add_checkbox(myhero->get_model() + ".comboEConfigUse", "Use E", true);
 				combo::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-				combo::use_e_only_when_w_ready = e_config->add_checkbox(myhero->get_model() + ".comboEConfigUseWhenW", "^~ use only when W ready", true);
+				combo::use_e_only_when_w_ready = e_config->add_checkbox(myhero->get_model() + ".comboEConfigUseWhenW", "^~ use only when W ready", false);
 			}
 			auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
 			{
@@ -137,7 +140,7 @@ namespace taliyah
 				{
 					harass::use_e = e_config->add_checkbox(myhero->get_model() + ".harassUseE", "Use E", false);
 					harass::use_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-					harass::use_e_only_when_w_ready = e_config->add_checkbox(myhero->get_model() + ".harassEConfigUseWhenW", "^~ use only when W ready", true);
+					harass::use_e_only_when_w_ready = e_config->add_checkbox(myhero->get_model() + ".harassEConfigUseWhenW", "^~ use only when W ready", false);
 				}
 			}
 			auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Laneclear");
@@ -192,6 +195,7 @@ namespace taliyah
 			{
 				hotkeys->add_separator(".hotkeysSep", "Hotkeys");
 				permashow::spell_farm = hotkeys->add_hotkey(".spellFarm", "Spell Farm", TreeHotkeyMode::Toggle, 'A', true);
+				permashow::semi_w_key = hotkeys->add_hotkey(".wSemiHotkey", "Semi W", TreeHotkeyMode::Hold, 'G', true);
 			}
 			auto draw = main_tab->add_tab(myhero->get_model() + ".draw", "Drawings");
 			{
@@ -209,6 +213,7 @@ namespace taliyah
 		{
 			Permashow::Instance.Init(main_tab);
 			Permashow::Instance.AddElement("Spell Farm", permashow::spell_farm);
+			Permashow::Instance.AddElement("Semi W", permashow::semi_w_key);
 		}
 
 		antigapcloser::add_event_handler(on_gapcloser);
@@ -246,6 +251,17 @@ namespace taliyah
 	{
 		if (orbwalker->can_move(0.05f))
 		{
+			if (w->is_ready() && permashow::semi_w_key->get_bool())
+			{
+				auto target = target_selector->get_target(w, damage_type::magical);
+
+				if (target != nullptr)
+				{
+					auto cast_position = w->get_prediction(target).get_unit_position();
+					w->cast(cast_position, myhero->get_position());
+				}
+			}
+
 			auto_w_on_chanelling_spells();
 
 			if (orbwalker->combo_mode())
@@ -362,6 +378,11 @@ namespace taliyah
 		}
 		if (w->is_ready() && target->is_valid_target(w->range()) && !target->is_invulnerable() && harass::use_w->get_bool())
 		{
+			if (target->is_under_ally_turret() && harass::use_w->get_bool() && w->is_ready())
+			{
+				auto cast_position = w->get_prediction(target).get_unit_position();
+				w->cast(cast_position, myhero->get_position());
+			}
 			if (is_under_ally_turret_modified(160) && myhero->get_distance(target->get_position()) < 450 && combo::use_w_under_turret->get_bool())
 			{
 				auto cast_position = w->get_prediction(target).get_unit_position();
@@ -385,7 +406,7 @@ namespace taliyah
 
 	void combo_logic()
 	{
-		auto target = target_selector->get_target(1100, damage_type::magical);
+		auto target = target_selector->get_target(1050, damage_type::magical);
 
 		if (target == nullptr) return;
 
@@ -421,6 +442,20 @@ namespace taliyah
 				{
 					auto cast_position = w->get_prediction(target).get_unit_position();
 					w->cast(cast_position, myhero->get_position());
+				}
+			}
+		}
+	}
+
+	void auto_e_on_dashing()
+	{
+		for (auto&& enemy : entitylist->get_enemy_heroes())
+		{
+			if (enemy->is_valid_target(e->range()) && !enemy->is_dead() && !enemy->is_zombie())
+			{
+				if (enemy->is_dashing())
+				{
+					//auto end_dash_position = enemy->get_path();
 				}
 			}
 		}
@@ -463,7 +498,7 @@ namespace taliyah
 					use_e = true;
 
 					if(target->is_valid_target(e->range()) && (orbwalker->combo_mode() || orbwalker->harass()))
-						scheduler->delay_action(0.2f, [target] 
+						scheduler->delay_action(0.21f, [target] 
 							{ 
 								if(use_e)
 									e->cast(target->get_position()); 
@@ -489,6 +524,28 @@ namespace taliyah
 		
 	}
 
+	bool is_enemy_closer_to_turret_than_me(game_object_script enemy)
+	{
+		for (auto&& turret : entitylist->get_ally_turrets())
+		{
+			if (turret->get_distance(enemy->get_position()) < turret->get_distance(myhero->get_position()))
+				return true;
+		}
+
+		return false;
+	}
+
+	bool is_enemy_close_to_turret(game_object_script enemy)
+	{
+		for (auto&& turret : entitylist->get_ally_turrets())
+		{
+			if (turret->get_distance(enemy->get_position()) < 1300)
+				return true;
+		}
+
+		return false;
+	}
+
 	void on_draw()
 	{
 		if (myhero->is_dead())
@@ -496,11 +553,32 @@ namespace taliyah
 			return;
 		}
 
+		if (q->is_ready() && draw::draw_q->get_bool())
+		{
+			draw_manager->add_circle(myhero->get_position(), q->range(), draw::q_color->get_color());
+		}
+		if (w->is_ready() && draw::draw_w->get_bool())
+		{
+			draw_manager->add_circle(myhero->get_position(), w->range(), draw::w_color->get_color());
+		}
+		if (e->is_ready() && draw::draw_e->get_bool())
+		{
+			draw_manager->add_circle(myhero->get_position(), e->range() + 15, draw::e_color->get_color());
+		}
+
 		for (auto&& enemy : entitylist->get_enemy_heroes())
 		{
 			if (myhero->get_distance(enemy->get_position()) < 1200)
 			{
 				auto distance = myhero->get_distance(enemy->get_position());
+
+				if (is_under_ally_turret_modified(160) && myhero->get_distance(enemy->get_position()) < w->range() && is_enemy_close_to_turret(enemy))
+				{
+					auto pos = enemy->get_position();
+					renderer->world_to_screen(pos, pos);
+					draw_manager->add_text_on_screen(pos + vector(-60, 10), 4278781960, 20, "Pushing under turret");
+					return;
+				}
 
 				if(distance > 500)
 				{
@@ -515,19 +593,6 @@ namespace taliyah
 					draw_manager->add_text_on_screen(pos + vector(-50, 10), 4278781960, 20, "Pushing away");
 				}
 			}
-		}
-
-		if (q->is_ready() && draw::draw_q->get_bool())
-		{
-			draw_manager->add_circle(myhero->get_position(), q->range(), draw::q_color->get_color());
-		}
-		if (w->is_ready() && draw::draw_w->get_bool())
-		{
-			draw_manager->add_circle(myhero->get_position(), w->range(), draw::w_color->get_color());
-		}
-		if (e->is_ready() && draw::draw_e->get_bool())
-		{
-			draw_manager->add_circle(myhero->get_position(), e->range()+15, draw::e_color->get_color());
 		}
 	}
 }
