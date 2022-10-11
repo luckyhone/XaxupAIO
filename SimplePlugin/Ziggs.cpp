@@ -294,7 +294,8 @@ namespace ziggs
 
                 if (target != nullptr)
                 {
-                    r->cast(target, hit_chance::high);
+                    auto cast_position = r->get_prediction(target).get_unit_position();
+                    r->cast(cast_position);
                 }
             }
 
@@ -563,19 +564,23 @@ namespace ziggs
 
             if (target->count_allies_in_range(700) == 0 && is_killable_with_r_auto_kill(target, 120))
             {
-                r->cast(target, hit_chance::high);
+                auto cast_position = r->get_prediction(target).get_unit_position();            
+                r->cast(cast_position);
             }
             if (target->count_allies_in_range(700) == 1 && is_killable_with_r_auto_kill(target, 370))
             {
-                r->cast(target, hit_chance::high);
+                auto cast_position = r->get_prediction(target).get_unit_position();
+                r->cast(cast_position);
             }
             if (target->count_allies_in_range(700) == 2 && is_killable_with_r_auto_kill(target, 650))
             {
-                r->cast(target, hit_chance::high);
+                auto cast_position = r->get_prediction(target).get_unit_position();
+                r->cast(cast_position);
             }
             if (target->count_allies_in_range(700) > 2 && is_killable_with_r_auto_kill(target, 1100))
             {
-                r->cast(target, hit_chance::high);
+                auto cast_position = r->get_prediction(target).get_unit_position();
+                r->cast(cast_position);
             }
         }
     }
