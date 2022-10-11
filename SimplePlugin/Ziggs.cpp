@@ -123,7 +123,7 @@ namespace ziggs
         q->set_skillshot(0.25, 133, 1700, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_line);
         w->set_skillshot(0.25, 325, 1750, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_circle);
         e->set_skillshot(0.25, 325, 1550, { collisionable_objects::yasuo_wall }, skillshot_type::skillshot_circle);
-        r->set_skillshot(0.375, 525, 2250, { }, skillshot_type::skillshot_circle);
+        r->set_skillshot(0.375, 525, 2000, { }, skillshot_type::skillshot_circle);
 
         q->set_spell_lock(false);
         w->set_spell_lock(false);
