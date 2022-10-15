@@ -1,7 +1,7 @@
 #include "../plugin_sdk/plugin_sdk.hpp"
 
 PLUGIN_NAME( "XaxupAIO" );
-SUPPORTED_CHAMPIONS(champion_id::Teemo, champion_id::Amumu, champion_id::Nidalee, champion_id::Ziggs, champion_id::Taliyah);
+SUPPORTED_CHAMPIONS(champion_id::Teemo, champion_id::Amumu, champion_id::Nidalee, champion_id::Ziggs, champion_id::Taliyah, champion_id::Riven);
 
 #include "Teemo.h"
 #include "Amumu.h"
