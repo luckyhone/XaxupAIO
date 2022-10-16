@@ -7,6 +7,7 @@ namespace riven
 {
 	float get_w_radius();
 	float get_aa_range();
+	void auto_r_if_about_to_die();
 	void auto_flash_kill_logic();
 	void auto_r_if_about_to_expire();
 	void auto_q_if_about_to_expire();
@@ -62,6 +63,7 @@ namespace riven
 	{
 		TreeEntry* dance_q;
 		TreeEntry* flash_ks_burst;
+		TreeEntry* flash_ks_burst_key;
 		TreeEntry* dont_cast_r1_if_killable_without;
 		TreeEntry* dont_use_e_in_aa_range;
 		TreeEntry* e_in_aa_range_unless_hp;
@@ -81,6 +83,7 @@ namespace riven
 	namespace automatic
 	{
 		TreeEntry* auto_r_expire;
+		TreeEntry* auto_r_about_die;
 		TreeEntry* auto_r_if_hit_x_enemies;
 		TreeEntry* auto_r_if_hit_x_enemies_slider;
 		TreeEntry* auto_w_gapclose;
@@ -92,6 +95,7 @@ namespace riven
 	}
 	namespace laneclear
 	{
+		TreeEntry* use_spells_laneclear;
 		TreeEntry* use_q;
 		TreeEntry* use_w;
 		TreeEntry* use_w_min_minions;
@@ -109,6 +113,7 @@ namespace riven
 	}
 	namespace draw
 	{
+		TreeEntry* draw_dmg_pred_hp_bar;
 		TreeEntry* draw_q;
 		TreeEntry* draw_w;
 		TreeEntry* draw_e;
@@ -153,6 +158,7 @@ namespace riven
 				combo::dont_use_e_in_aa_range->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 				combo::e_in_aa_range_unless_hp = combo->add_slider(".dontUseEInAAUnlessHP", "  ^~ ignore if my hp is lower than", 60, 1,99);
 				combo::flash_ks_burst = combo->add_checkbox(".flashKillstealBurst", "Enable Flash Burst (if killable)", true);
+				combo::flash_ks_burst_key = combo->add_hotkey(".flashKillstealBurstKey", "Flash Killsteal Burst Key", TreeHotkeyMode::Hold, 'T', true);
 
 				if (myhero->get_spell(spellslot::summoner1)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
 					combo::flash_ks_burst->set_texture(myhero->get_spell(spellslot::summoner1)->get_icon_texture());
@@ -186,13 +192,15 @@ namespace riven
 				automatic::auto_w_channeling->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
 				automatic::auto_w_dashing = automatic->add_checkbox(".autoWDashing", "Auto W On Dashing Spells", false);
 				automatic::auto_w_dashing->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
-				automatic::auto_w_gapclose = automatic->add_checkbox(".autoWGapclose", "Auto W On Gapclose", false);
+				automatic::auto_w_gapclose = automatic->add_checkbox(".autoWGapclose", "Auto W On Gapclose", true);
 				automatic::auto_w_gapclose->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
 				automatic::auto_w_on_multi_enemies = automatic->add_checkbox(".autoWMultiEnemies", "Auto W On Multiple Enemies", true);
 				automatic::auto_w_on_multi_enemies->set_texture(myhero->get_spell(spellslot::w)->get_icon_texture());
 				automatic::auto_w_on_multi_enemies_slider = automatic->add_slider(".autoWMultiEnemiesSlider", "  ^~ minimum enemies hit", 2, 2, 5);
 				automatic::auto_r_expire = automatic->add_checkbox(".autoRIfExpire", "Auto R If About To Expire (if target valid)", true);
 				automatic::auto_r_expire->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
+				automatic::auto_r_about_die = automatic->add_checkbox(".autoRIfDie", "Auto R If About To Die", true);
+				automatic::auto_r_about_die->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 				automatic::auto_r_if_hit_x_enemies = automatic->add_checkbox(".autoRIfXEnemies", "Auto R If Will Hit X Enemies", true);
 				automatic::auto_r_if_hit_x_enemies->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 				automatic::auto_r_if_hit_x_enemies_slider = automatic->add_slider(".autoRIfXEnemiesSlider", "  ^~ minimum enemies hit", 4,2,5);
@@ -200,6 +208,7 @@ namespace riven
 			auto laneclear = main_tab->add_tab(myhero->get_model() + ".laneclear", "Laneclear");
 			{
 				laneclear->add_separator(".laneSep", "Laneclear");
+				laneclear::use_spells_laneclear = laneclear->add_hotkey(".spellFarmLaneclear", "Spell Farm", TreeHotkeyMode::Toggle, 'A', true);
 				laneclear::use_q = laneclear->add_checkbox(".laneclearUseQ", "Use Q", true);
 				laneclear::use_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 				laneclear::use_w = laneclear->add_checkbox(".laneclearUseW", "Use W", true);
@@ -229,6 +238,7 @@ namespace riven
 			{
 				draw->add_separator(".drawSep", "Drawings");
 				float color[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+				draw::draw_dmg_pred_hp_bar = draw->add_checkbox(myhero->get_model() + ".drawDmg", "Draw DMG Prediction", true);
 				draw::draw_w = draw->add_checkbox(myhero->get_model() + ".drawW", "Draw W Range", true);
 				draw::draw_e = draw->add_checkbox(myhero->get_model() + ".drawE", "Draw E Range", true);
 				draw::draw_r = draw->add_checkbox(myhero->get_model() + ".drawR", "Draw R Range", true);
@@ -240,6 +250,13 @@ namespace riven
 				draw::draw_e->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
 				draw::draw_r->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 			}
+		}
+
+		//Permashow
+		{
+				Permashow::Instance.Init(main_tab);
+				Permashow::Instance.AddElement("Spell Farm", laneclear::use_spells_laneclear);
+				Permashow::Instance.AddElement("Flash Burst Key", combo::flash_ks_burst_key);
 		}
 
 		antigapcloser::add_event_handler(on_gapcloser);
@@ -275,6 +292,9 @@ namespace riven
 	void on_update()
 	{
 		auto_r_if_about_to_expire();
+		auto_r_if_about_to_die();
+
+		if (combo::auto_q_expire->get_bool()) auto_q_if_about_to_expire();
 
 		#pragma region Combo
 				if (orbwalker->combo_mode())
@@ -287,7 +307,6 @@ namespace riven
 
 					//Auto things			
 					auto_flash_kill_logic();
-					if (combo::auto_q_expire->get_bool()) auto_q_if_about_to_expire();
 					auto_r_if_will_hit_enough_enemies();
 					auto_w_if_killable();
 					auto_w_if_enough_enemies();
@@ -444,7 +463,7 @@ namespace riven
 
 					if (!lane_minions.empty())
 					{
-						if (laneclear::use_w->get_bool() && w->is_ready())
+						if (laneclear::use_w->get_bool() && w->is_ready() && laneclear::use_spells_laneclear->get_bool())
 						{
 							if (utilities::count_enemy_minions_in_range(get_w_radius(), myhero->get_position()) >= laneclear::use_w_min_minions->get_int())
 							{
@@ -469,7 +488,7 @@ namespace riven
 
 	void cast_r1()
 	{
-		auto target = target_selector->get_target(600, damage_type::physical);
+		auto target = target_selector->get_target(550, damage_type::physical);
 
 		if (target == nullptr || !target->is_valid_target()) return;
 
@@ -572,7 +591,7 @@ namespace riven
 
 		if (orbwalker->lane_clear_mode())
 		{
-			if (target->is_lane_minion() && laneclear::use_q->get_bool() && target != nullptr)
+			if (target->is_lane_minion() && laneclear::use_q->get_bool() && target != nullptr && laneclear::use_spells_laneclear->get_bool() && !target->is_dead() && target->get_health_percent() > 5.0f)
 				q->cast(target->get_position());
 			else if (target->is_monster() && jungleclear::use_q->get_bool() && target != nullptr)
 				q->cast(target->get_position());
@@ -917,6 +936,8 @@ namespace riven
 			draw_manager->add_circle(myhero->get_position(), 1100, draw::e_color->get_color());
 		}
 
+		if (!draw::draw_dmg_pred_hp_bar->get_bool()) return;
+
 		for (auto& enemy : entitylist->get_enemy_heroes())
 		{
 			if (!enemy->is_dead() && enemy->is_valid() && enemy->is_hpbar_recently_rendered() && !enemy->is_zombie())
@@ -941,15 +962,15 @@ namespace riven
 
 				if (enemy_hp_percent_draw <= 55)
 				{
-					draw_dmg_rl(enemy, final_dmg, MAKE_COLOR(120, 13, 13, 230));
+					draw_dmg_rl(enemy, final_dmg, MAKE_COLOR(120, 13, 13, 190));
 				}
-				else if (enemy_hp_percent_draw > 55 && enemy_hp_percent_draw < 80)
+				else if (enemy_hp_percent_draw > 55 && enemy_hp_percent_draw < 75)
 				{
-					draw_dmg_rl(enemy, final_dmg, MAKE_COLOR(173, 183, 34, 230));
+					draw_dmg_rl(enemy, final_dmg, MAKE_COLOR(173, 183, 34, 190));
 				}
-				else if (enemy_hp_percent_draw > 80)
+				else if (enemy_hp_percent_draw > 75)
 				{
-					draw_dmg_rl(enemy, final_dmg, MAKE_COLOR(22, 73, 12, 230));
+					draw_dmg_rl(enemy, final_dmg, MAKE_COLOR(27, 225, 113, 190));
 				}
 			}
 		}
@@ -991,6 +1012,19 @@ namespace riven
 		if (!combo::flash_ks_burst->get_bool()) return;
 		if (myhero->is_dead() || myhero->is_recalling()) return;
 
+		if (flash && flash != nullptr && flash->is_ready() && combo::flash_ks_burst_key->get_bool())
+		{
+			auto target = target_selector->get_target(250 + 400 + 80, damage_type::physical);
+
+			if (target == nullptr || !target->is_valid_target() || target->is_invulnerable() || target->is_zombie()) return;
+
+			if (target->get_distance(myhero) > get_aa_range() + target->get_bounding_radius() + 100)
+			{
+				flash_ks_executing = true;
+				e->cast(target);
+				scheduler->delay_action(0.3f, [target] {if (target != nullptr) flash->cast(target); scheduler->delay_action(0.05f, [target] { w->cast();  scheduler->delay_action(0.5f, [target] { flash_ks_executing = false; if (target != nullptr) q->cast(target);  }); }); });
+			}
+		}
 
 		if (e->is_ready() && q->is_ready() && w->is_ready() && flash && flash != nullptr && flash->is_ready())
 		{
@@ -1022,6 +1056,20 @@ namespace riven
 			{
 				q->cast();
 			}
+		}
+	}
+
+	void auto_r_if_about_to_die()
+	{
+		if (!automatic::auto_r_about_die->get_bool() || !r->is_ready()) return;
+		if (myhero->is_dead() || myhero->is_recalling() || !r1_casted) return;
+
+		auto target = target_selector->get_target(1130, damage_type::physical);
+		if (target == nullptr || !target->is_valid_target()) return;
+
+		if (health_prediction->get_incoming_damage(myhero, 1.f, true) > myhero->get_health())
+		{
+			r->cast(target);
 		}
 	}
 
