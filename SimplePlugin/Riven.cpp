@@ -151,7 +151,7 @@ namespace riven
 				combo::dont_cast_r1_if_killable_without->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
 				combo::dont_use_e_in_aa_range = combo->add_checkbox(".dontUseEInAA", "Don't Use E If Target In AA Range", true);
 				combo::dont_use_e_in_aa_range->set_texture(myhero->get_spell(spellslot::e)->get_icon_texture());
-				combo::e_in_aa_range_unless_hp = combo->add_slider(".dontUseEInAAUnlessHP", "  ^~ ignore if my hp is lower than", 40, 1,99);
+				combo::e_in_aa_range_unless_hp = combo->add_slider(".dontUseEInAAUnlessHP", "  ^~ ignore if my hp is lower than", 60, 1,99);
 				combo::flash_ks_burst = combo->add_checkbox(".flashKillstealBurst", "Enable Flash Burst (if killable)", true);
 
 				if (myhero->get_spell(spellslot::summoner1)->get_spell_data()->get_name_hash() == spell_hash("SummonerFlash"))
@@ -164,7 +164,7 @@ namespace riven
 			auto harass = main_tab->add_tab(myhero->get_model() + ".harass", "Haras");
 			{
 				harass->add_separator(".harassSep", "Harass");
-				harass::switch_to_safe_when_hp = harass->add_slider(".safeHarassSwitchSlider", "Switch To Safe Harass Mode When Hp Below", 50, 1, 99);
+				harass::switch_to_safe_when_hp = harass->add_slider(".safeHarassSwitchSlider", "Switch To Safe Harass Mode When Hp Below", 35, 1, 99);
 				harass::auto_q_expire = harass->add_checkbox(".harassAutoQExpire", "Auto Q If About To Expire", true);
 				harass::auto_q_expire->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 
