@@ -144,8 +144,8 @@ namespace riven
 			auto combo = main_tab->add_tab(myhero->get_model() + ".combo", "Combo");
 			{
 				combo->add_separator(".comboSep", "Combo");
-				combo::dance_q = combo->add_checkbox(".useDanceQ", "Enable Dance Q", false);
-				combo::dance_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
+				//combo::dance_q = combo->add_checkbox(".useDanceQ", "Enable Dance Q", false);
+				//combo::dance_q->set_texture(myhero->get_spell(spellslot::q)->get_icon_texture());
 				combo::auto_q_expire = combo->add_checkbox(".comboAutoQExpire", "Auto Q If About To Expire", true);
 				combo::dont_cast_r1_if_killable_without = combo->add_checkbox(".dontCastR1", "Don't Use R1 If Killable Without Ult", true);
 				combo::dont_cast_r1_if_killable_without->set_texture(myhero->get_spell(spellslot::r)->get_icon_texture());
@@ -173,9 +173,9 @@ namespace riven
 			{
 				delays->add_separator(".delaysNormalSep", "Normal Delays");
 				delays->add_separator(".delaysNormalSepInfo", "---DON'T TOUCH UNLESS YOU KNOW HOW TO SET IT---");
-				delays::q1_delay = delays->add_slider(".q1Delay", "Q1 Delay (ms)", 34, 21, 40);
-				delays::q2_delay = delays->add_slider(".q2Delay", "Q2 Delay (ms)", 34, 21, 40);
-				delays::q3_delay = delays->add_slider(".q3Delay", "Q3 Delay (ms)", 48, 40, 55);
+				delays::q1_delay = delays->add_slider(".q1Delay", "Q1 Delay (ms)", 40, 25, 45);
+				delays::q2_delay = delays->add_slider(".q2Delay", "Q2 Delay (ms)", 40, 25, 45);
+				delays::q3_delay = delays->add_slider(".q3Delay", "Q3 Delay (ms)", 55, 40, 60);
 			}
 			auto automatic = main_tab->add_tab(myhero->get_model() + ".automatic", "Automatic");
 			{
@@ -631,7 +631,7 @@ namespace riven
 			{
 				if (orbwalker->combo_mode())
 				{
-					if (combo::dance_q->get_bool())
+					if (combo::dance_q != nullptr && combo::dance_q->get_bool())
 					{
 						auto n_target = target_selector->get_target(500, damage_type::physical);
 
@@ -820,7 +820,7 @@ namespace riven
 
 	void cancel_q(game_object_script target)
 	{
-		if (!combo::dance_q->get_bool())
+		if (combo::dance_q != nullptr && !combo::dance_q->get_bool())
 		{
 			auto pos = hud->get_hud_input_logic()->get_game_cursor_position();
 			orbwalker->move_to(pos);
