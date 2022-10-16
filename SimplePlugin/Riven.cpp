@@ -479,7 +479,7 @@ namespace riven
 		}
 		else
 		{
-			if (!r1_casted && r->is_ready() && (is_killable_with_r_full_combo(target, 450)))
+			if (!r1_casted && r->is_ready())
 			{
 				if (e->is_ready())
 				{
